@@ -7,7 +7,7 @@ class AppMapWidget extends StatefulWidget {
   final LatLng initialPosition;
   final double initialZoom;
   final bool showCenterPin;
-  final void Function(MaplibreMapController controller)? onMapReady;
+  final void Function(MapLibreMapController controller)? onMapReady;
 
   const AppMapWidget({
     super.key,
@@ -22,7 +22,7 @@ class AppMapWidget extends StatefulWidget {
 }
 
 class _AppMapWidgetState extends State<AppMapWidget> {
-  MaplibreMapController? _controller;
+  MapLibreMapController? _controller;
   bool _styleLoaded = false;
 
   @override
@@ -30,7 +30,7 @@ class _AppMapWidgetState extends State<AppMapWidget> {
     return Stack(
       alignment: Alignment.center,
       children: [
-        MaplibreMap(
+        MapLibreMap(
           initialCameraPosition: CameraPosition(
             target: widget.initialPosition,
             zoom: widget.initialZoom,
