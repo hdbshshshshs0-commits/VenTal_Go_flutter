@@ -1,0 +1,33 @@
+name: VenTal Go
+description: Кроссплатформенный суперапп — такси, еда, посылки.
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+
+  # State management
+  provider: ^6.1.2
+
+  # Сеть — подключим, когда появится реальный Go API
+  dio: ^5.4.0
+
+  # Изображения с бэкенда (кэширование)
+  cached_network_image: ^3.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/services/
+    - assets/images/icons/
+    - assets/images/banners/
