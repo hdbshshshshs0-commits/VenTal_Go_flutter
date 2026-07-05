@@ -34,21 +34,33 @@ class _TaxiRideInProgressScreenState extends State<TaxiRideInProgressScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: const [BoxShadow(color: AppColors.cardShadow, blurRadius: 16, offset: Offset(0, 6))],
+                boxShadow: const [
+                  BoxShadow(color: AppColors.cardShadow, blurRadius: 16, offset: Offset(0, 6))
+                ],
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Row(
                     children: [
-                      const CircleAvatar(radius: 24, backgroundColor: AppColors.divider, child: Icon(Icons.person, color: AppColors.textDark)),
+                      const CircleAvatar(
+                        radius: 24,
+                        backgroundColor: AppColors.divider,
+                        child: Icon(Icons.person, color: AppColors.textDark),
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Водитель', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
-                            Text('${context.l10n.t('taxi_arrives_in')} 3 ${context.l10n.t('taxi_min_short')}', style: const TextStyle(fontSize: 12.5, color: Colors.black54)),
+                            Text(
+                              context.l10n.t('taxi_driver'),
+                              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                            ),
+                            Text(
+                              '${context.l10n.t('taxi_arrives_in')} 3 ${context.l10n.t('taxi_min_short')}',
+                              style: const TextStyle(fontSize: 12.5, color: Colors.black54),
+                            ),
                           ],
                         ),
                       ),
@@ -71,9 +83,11 @@ class _TaxiRideInProgressScreenState extends State<TaxiRideInProgressScreen> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       ),
                       onPressed: () {
-                        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const TaxiRatingScreen()));
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (_) => const TaxiRatingScreen()),
+                        );
                       },
-                      child: const Text('Завершить (тест)'),
+                      child: Text(context.l10n.t('taxi_finish_test')),
                     ),
                   ),
                 ],

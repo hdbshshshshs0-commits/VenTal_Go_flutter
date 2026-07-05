@@ -1,9 +1,12 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:vental_go/core/theme/app_colors.dart';
 import 'package:vental_go/core/localization/app_localizations.dart';
 import 'package:vental_go/core/maps/map_widget.dart';
 import 'package:vental_go/core/location/location_service.dart';
+import 'package:vental_go/core/geocoding/geocoding_service.dart';
+import 'package:vental_go/core/routing/osrm_service.dart';
 import '../../data/models/car_class_model.dart';
 import '../../data/models/payment_method_model.dart';
 import '../widgets/car_class_bottom_sheet.dart';
@@ -21,12 +24,14 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
   LatLng? _userPosition;
   String? _locationErrorKey;
 
-  String fromAddress = '';
-  String toAddress = '';
+  LatLng? _fromLatLng;
+  LatLng? _toLatLng;
   CarClass selectedClass = CarClass.economy;
   PaymentMethod selectedPayment = PaymentMethod.card;
   final CityType cityType = CityType.bigCity;
   double distanceKm = 0;
+  List<LatLng>? _routePoints;
+  MapLibreMapController? _mapController;
 
   @override
   void initState() {
@@ -51,8 +56,52 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
     setState(() => _dataLoaded = true);
   }
 
+  Future<void> _updateRoute() async {
+    final from = _fromLatLng;
+    final to = _toLatLng;
+    if (from == null || to == null) return;
+
+    setState(() { distanceKm = 0; _routePoints = null; });
+
+    final result = await OsrmService.getRoute(from, to);
+    if (!mounted) return;
+
+    setState(() {
+      _routePoints = result?.geometry;
+      distanceKm = result?.distanceKm ??
+          GeocodingService.calculateDistanceKm(from, to);
+    });
+
+    _fitCameraToRoute(from, to);
+  }
+
+  Future<void> _fitCameraToRoute(LatLng from, LatLng to) async {
+    final ctrl = _mapController;
+    if (ctrl == null) return;
+    await ctrl.animateCamera(
+      CameraUpdate.newLatLngBounds(
+        LatLngBounds(
+          southwest: LatLng(
+            math.min(from.latitude, to.latitude) - 0.005,
+            math.min(from.longitude, to.longitude) - 0.005,
+          ),
+          northeast: LatLng(
+            math.max(from.latitude, to.latitude) + 0.005,
+            math.max(from.longitude, to.longitude) + 0.005,
+          ),
+        ),
+        left: 60,
+        top: 80,
+        right: 60,
+        bottom: 340,
+      ),
+    );
+  }
+
   void _handleOrder() {
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TaxiSearchingDriverScreen()));
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const TaxiSearchingDriverScreen()),
+    );
   }
 
   @override
@@ -67,11 +116,22 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
                     color: AppColors.divider,
                     child: Center(
                       child: _locationErrorKey != null
-                          ? Padding(padding: const EdgeInsets.all(16), child: Text(context.l10n.t(_locationErrorKey!), textAlign: TextAlign.center))
+                          ? Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Text(
+                                context.l10n.t(_locationErrorKey!),
+                                textAlign: TextAlign.center,
+                              ),
+                            )
                           : const CircularProgressIndicator(strokeWidth: 2),
                     ),
                   )
-                : AppMapWidget(initialPosition: _userPosition!, showCenterPin: true),
+                : AppMapWidget(
+                    initialPosition: _userPosition!,
+                    showCenterPin: false,
+                    routePoints: _routePoints,
+                    onMapReady: (controller) => _mapController = controller,
+                  ),
           ),
           Positioned(
             top: 0,
@@ -97,10 +157,15 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
             child: CarClassBottomSheet(
               dataLoaded: _dataLoaded,
               cityType: cityType,
-              fromAddress: fromAddress,
-              toAddress: toAddress,
-              onFromChanged: (v) => setState(() => fromAddress = v),
-              onToChanged: (v) => setState(() => toAddress = v),
+              biasPosition: _userPosition,
+              onFromSelected: (address, latLng) {
+                setState(() => _fromLatLng = latLng);
+                _updateRoute();
+              },
+              onToSelected: (address, latLng) {
+                setState(() => _toLatLng = latLng);
+                _updateRoute();
+              },
               selectedClass: selectedClass,
               onClassSelected: (c) => setState(() => selectedClass = c),
               selectedPayment: selectedPayment,

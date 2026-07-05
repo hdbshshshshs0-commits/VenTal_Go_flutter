@@ -7,6 +7,7 @@ class AppMapWidget extends StatefulWidget {
   final LatLng initialPosition;
   final double initialZoom;
   final bool showCenterPin;
+  final List<LatLng>? routePoints;
   final void Function(MapLibreMapController controller)? onMapReady;
 
   const AppMapWidget({
@@ -14,6 +15,7 @@ class AppMapWidget extends StatefulWidget {
     required this.initialPosition,
     this.initialZoom = 15,
     this.showCenterPin = false,
+    this.routePoints,
     this.onMapReady,
   });
 
@@ -24,6 +26,39 @@ class AppMapWidget extends StatefulWidget {
 class _AppMapWidgetState extends State<AppMapWidget> {
   MapLibreMapController? _controller;
   bool _styleLoaded = false;
+  Line? _routeLine;
+
+  @override
+  void didUpdateWidget(AppMapWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.routePoints != oldWidget.routePoints && _styleLoaded) {
+      _updateRouteLine();
+    }
+  }
+
+  Future<void> _updateRouteLine() async {
+    final ctrl = _controller;
+    if (ctrl == null) return;
+
+    if (_routeLine != null) {
+      await ctrl.removeLine(_routeLine!);
+      _routeLine = null;
+    }
+
+    final points = widget.routePoints;
+    if (points != null && points.length >= 2) {
+      _routeLine = await ctrl.addLine(
+        LineOptions(
+          geometry: points,
+          lineColor: '#4A6CF7',
+          lineWidth: 4.0,
+          lineOpacity: 0.9,
+          lineCap: 'round',
+          lineJoin: 'round',
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +75,10 @@ class _AppMapWidgetState extends State<AppMapWidget> {
           onMapCreated: (controller) => _controller = controller,
           onStyleLoadedCallback: () {
             setState(() => _styleLoaded = true);
-            if (_controller != null) widget.onMapReady?.call(_controller!);
+            if (_controller != null) {
+              widget.onMapReady?.call(_controller!);
+              _updateRouteLine();
+            }
           },
         ),
         if (widget.showCenterPin) const CenterPin(),

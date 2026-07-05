@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vental_go/core/theme/app_colors.dart';
+import 'package:vental_go/core/localization/app_localizations.dart';
 import '../../data/models/service_tile_model.dart';
 import '../widgets/address_pill.dart';
 import '../widgets/main_services_row.dart';
@@ -51,7 +52,7 @@ class MainHubScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
               children: [
-                const AddressPill(address: 'Мангилик Ел, 28'),
+                AddressPill(address: context.l10n.t('hub_default_address')),
                 const SizedBox(height: 20),
                 MainServicesRow(tiles: _mainTiles, onTap: (tile) => _handleMainTileTap(context, tile)),
                 const SizedBox(height: 20),
