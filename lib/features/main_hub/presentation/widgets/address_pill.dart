@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:vental_go/core/theme/app_colors.dart';
 
 class AddressPill extends StatelessWidget {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
-
+import 'package:vental_go/core/theme/app_colors.dart';
 import 'widgets/center_pin.dart';
 
 class AppMapWidget extends StatefulWidget {
@@ -36,6 +36,7 @@ class _AppMapWidgetState extends State<AppMapWidget> {
             zoom: widget.initialZoom,
           ),
           styleString: 'asset://assets/map/style.json',
+          myLocationEnabled: true,
           onMapCreated: (controller) => _controller = controller,
           onStyleLoadedCallback: () {
             setState(() => _styleLoaded = true);
@@ -45,17 +46,10 @@ class _AppMapWidgetState extends State<AppMapWidget> {
         if (widget.showCenterPin) const CenterPin(),
         if (!_styleLoaded)
           Container(
-            color: AppColorsStub.divider,
+            color: AppColors.divider,
             child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
           ),
       ],
     );
   }
-}
-
-/// Локальный алиас, чтобы не тянуть весь AppColors в core/maps (избегаем
-/// циклической зависимости между core-подпапками). Значение совпадает
-/// с AppColors.divider.
-class AppColorsStub {
-  static const Color divider = Color(0xFFE5E7EB);
 }

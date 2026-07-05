@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
-
 import 'package:vental_go/core/theme/app_colors.dart';
 import 'package:vental_go/core/localization/app_localizations.dart';
 import 'package:vental_go/core/maps/map_widget.dart';
 import 'package:vental_go/core/location/location_service.dart';
 import '../../data/models/car_class_model.dart';
-import '../../data/pricing/taxi_pricing_calculator.dart';
-import '../widgets/address_input_field.dart';
-import '../widgets/car_class_selector.dart';
-import '../widgets/taxi_screen_skeleton.dart';
+import '../../data/models/payment_method_model.dart';
+import '../widgets/car_class_bottom_sheet.dart';
+import 'taxi_searching_driver_screen.dart';
 
 class TaxiOrderScreen extends StatefulWidget {
   const TaxiOrderScreen({super.key});
@@ -26,8 +24,9 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
   String fromAddress = '';
   String toAddress = '';
   CarClass selectedClass = CarClass.economy;
+  PaymentMethod selectedPayment = PaymentMethod.card;
   final CityType cityType = CityType.bigCity;
-  double distanceKm = 0; // TODO: расчёт через геокодер (Photon/Nominatim), пока 0
+  double distanceKm = 0;
 
   @override
   void initState() {
@@ -52,21 +51,17 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
     setState(() => _dataLoaded = true);
   }
 
+  void _handleOrder() {
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TaxiSearchingDriverScreen()));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.textDark,
-        title: Text(context.l10n.t('tile_taxi')),
-      ),
-      body: Column(
+      body: Stack(
         children: [
-          SizedBox(
-            height: 220,
-            width: double.infinity,
+          Positioned.fill(
             child: _userPosition == null
                 ? Container(
                     color: AppColors.divider,
@@ -78,58 +73,44 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
                   )
                 : AppMapWidget(initialPosition: _userPosition!, showCenterPin: true),
           ),
-          Expanded(child: _dataLoaded ? _buildContent(context) : const TaxiScreenSkeleton()),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildContent(BuildContext context) {
-    final classes = TaxiPricingCalculator.classesFor(cityType);
-    final price = TaxiPricingCalculator.calculatePrice(cityType: cityType, carClass: selectedClass, distanceKm: distanceKm);
-
-    return Column(
-      children: [
-        Expanded(
-          child: ListView(
-            padding: const EdgeInsets.all(20),
-            children: [
-              AddressInputField(
-                icon: Icons.trip_origin,
-                hint: context.l10n.t('taxi_from'),
-                value: fromAddress,
-                onChanged: (v) => setState(() => fromAddress = v),
-              ),
-              const SizedBox(height: 10),
-              AddressInputField(
-                icon: Icons.location_on,
-                hint: context.l10n.t('taxi_to'),
-                value: toAddress,
-                onChanged: (v) => setState(() => toAddress = v),
-              ),
-              const SizedBox(height: 24),
-              Text(context.l10n.t('taxi_car_class_title'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textDark)),
-              const SizedBox(height: 12),
-              CarClassSelector(classes: classes, selectedClass: selectedClass, distanceKm: distanceKm, onSelect: (c) => setState(() => selectedClass = c)),
-            ],
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-          child: SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18))),
-              onPressed: distanceKm > 0 ? () {} : null,
-              child: Text(
-                distanceKm > 0 ? '${context.l10n.t('taxi_order_button')} $price тг' : context.l10n.t('taxi_fill_addresses'),
-                style: const TextStyle(color: AppColors.textLight, fontWeight: FontWeight.w700, fontSize: 16),
+          Positioned(
+            top: 0,
+            left: 0,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Material(
+                  color: Colors.white,
+                  shape: const CircleBorder(),
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textDark),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ),
               ),
             ),
           ),
-        ),
-      ],
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: CarClassBottomSheet(
+              dataLoaded: _dataLoaded,
+              cityType: cityType,
+              fromAddress: fromAddress,
+              toAddress: toAddress,
+              onFromChanged: (v) => setState(() => fromAddress = v),
+              onToChanged: (v) => setState(() => toAddress = v),
+              selectedClass: selectedClass,
+              onClassSelected: (c) => setState(() => selectedClass = c),
+              selectedPayment: selectedPayment,
+              onPaymentChanged: (p) => setState(() => selectedPayment = p),
+              distanceKm: distanceKm,
+              onOrder: _handleOrder,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

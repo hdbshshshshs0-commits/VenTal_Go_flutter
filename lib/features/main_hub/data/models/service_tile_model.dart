@@ -1,6 +1,6 @@
 class ServiceTileModel {
   final String id;
-  final String labelKey; // ключ для локализации
+  final String labelKey;
   final String iconPath;
   final int sortOrder;
 

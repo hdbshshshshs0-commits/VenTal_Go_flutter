@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import 'package:vental_go/core/theme/app_colors.dart';
 import 'package:vental_go/core/localization/locale_controller.dart';
 import 'package:vental_go/features/main_hub/presentation/screens/main_hub_screen.dart';

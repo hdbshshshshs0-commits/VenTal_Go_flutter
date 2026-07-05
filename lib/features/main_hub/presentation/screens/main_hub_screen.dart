@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:vental_go/core/theme/app_colors.dart';
 import '../../data/models/service_tile_model.dart';
 import '../widgets/address_pill.dart';
@@ -9,6 +8,8 @@ import '../widgets/promo_carousel.dart';
 import '../widgets/floating_search_bar.dart';
 import 'aitym_recommendations_screen.dart';
 import 'package:vental_go/features/taxi/presentation/screens/taxi_order_screen.dart';
+import 'package:vental_go/features/food/presentation/screens/restaurant_list_screen.dart';
+import 'package:vental_go/features/parcels/presentation/screens/parcel_order_screen.dart';
 
 class MainHubScreen extends StatelessWidget {
   const MainHubScreen({super.key});
@@ -27,10 +28,17 @@ class MainHubScreen extends StatelessWidget {
   ];
 
   void _handleMainTileTap(BuildContext context, ServiceTileModel tile) {
-    if (tile.id == 'taxi') {
-      Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TaxiOrderScreen()));
+    switch (tile.id) {
+      case 'taxi':
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TaxiOrderScreen()));
+        break;
+      case 'food':
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const RestaurantListScreen()));
+        break;
+      case 'parcels':
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ParcelOrderScreen()));
+        break;
     }
-    // TODO: food, parcels — экраны появятся отдельно
   }
 
   @override
@@ -43,7 +51,7 @@ class MainHubScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
               children: [
-                const AddressPill(address: 'Мангилик Ел, 28'), // TODO: заменить на реальный адрес из геолокации/профиля
+                const AddressPill(address: 'Мангилик Ел, 28'),
                 const SizedBox(height: 20),
                 MainServicesRow(tiles: _mainTiles, onTap: (tile) => _handleMainTileTap(context, tile)),
                 const SizedBox(height: 20),

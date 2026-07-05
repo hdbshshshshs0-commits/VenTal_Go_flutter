@@ -22,9 +22,6 @@ class AppLocalizations {
   }
 }
 
-/// Удобный доступ: context.l10n.t('key')
-/// Через context.watch подписывается на LocaleController — при смене
-/// языка виджет, использующий это, автоматически перерисуется.
 extension LocalizationContext on BuildContext {
   AppLocalizations get l10n {
     final controller = watch<LocaleController>();

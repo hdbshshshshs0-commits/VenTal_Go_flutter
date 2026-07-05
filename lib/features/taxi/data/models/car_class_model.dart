@@ -6,8 +6,14 @@ class CarClassPricing {
   final CarClass carClass;
   final int minPrice;
   final int kmRate;
+  final String photoPath;
 
-  const CarClassPricing({required this.carClass, required this.minPrice, required this.kmRate});
+  const CarClassPricing({
+    required this.carClass,
+    required this.minPrice,
+    required this.kmRate,
+    required this.photoPath,
+  });
 }
 
 extension CarClassLabel on CarClass {

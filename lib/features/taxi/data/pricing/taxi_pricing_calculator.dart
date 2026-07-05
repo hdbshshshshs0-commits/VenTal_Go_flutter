@@ -3,18 +3,18 @@ import '../models/car_class_model.dart';
 class TaxiPricingCalculator {
   static const Map<CityType, List<CarClassPricing>> _table = {
     CityType.smallCity: [
-      CarClassPricing(carClass: CarClass.economy, minPrice: 500, kmRate: 60),
-      CarClassPricing(carClass: CarClass.comfort, minPrice: 700, kmRate: 80),
-      CarClassPricing(carClass: CarClass.comfortPlus, minPrice: 900, kmRate: 100),
-      CarClassPricing(carClass: CarClass.business, minPrice: 1100, kmRate: 120),
-      CarClassPricing(carClass: CarClass.eco, minPrice: 1035, kmRate: 115),
+      CarClassPricing(carClass: CarClass.economy, minPrice: 500, kmRate: 60, photoPath: 'assets/images/cars/economy.png'),
+      CarClassPricing(carClass: CarClass.comfort, minPrice: 700, kmRate: 80, photoPath: 'assets/images/cars/comfort.png'),
+      CarClassPricing(carClass: CarClass.comfortPlus, minPrice: 900, kmRate: 100, photoPath: 'assets/images/cars/comfort_plus.png'),
+      CarClassPricing(carClass: CarClass.business, minPrice: 1100, kmRate: 120, photoPath: 'assets/images/cars/business.png'),
+      CarClassPricing(carClass: CarClass.eco, minPrice: 1035, kmRate: 115, photoPath: 'assets/images/cars/eco.png'),
     ],
     CityType.bigCity: [
-      CarClassPricing(carClass: CarClass.economy, minPrice: 1100, kmRate: 80),
-      CarClassPricing(carClass: CarClass.comfort, minPrice: 1200, kmRate: 100),
-      CarClassPricing(carClass: CarClass.comfortPlus, minPrice: 1300, kmRate: 120),
-      CarClassPricing(carClass: CarClass.business, minPrice: 1500, kmRate: 150),
-      CarClassPricing(carClass: CarClass.eco, minPrice: 1495, kmRate: 138),
+      CarClassPricing(carClass: CarClass.economy, minPrice: 1100, kmRate: 80, photoPath: 'assets/images/cars/economy.png'),
+      CarClassPricing(carClass: CarClass.comfort, minPrice: 1200, kmRate: 100, photoPath: 'assets/images/cars/comfort.png'),
+      CarClassPricing(carClass: CarClass.comfortPlus, minPrice: 1300, kmRate: 120, photoPath: 'assets/images/cars/comfort_plus.png'),
+      CarClassPricing(carClass: CarClass.business, minPrice: 1500, kmRate: 150, photoPath: 'assets/images/cars/business.png'),
+      CarClassPricing(carClass: CarClass.eco, minPrice: 1495, kmRate: 138, photoPath: 'assets/images/cars/eco.png'),
     ],
   };
 

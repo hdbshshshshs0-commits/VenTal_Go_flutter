@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'package:vental_go/core/theme/app_colors.dart';
 
 class OnlineOfflineToggle extends StatefulWidget {

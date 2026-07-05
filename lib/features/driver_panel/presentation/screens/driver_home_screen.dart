@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
-
 import 'package:vental_go/core/theme/app_colors.dart';
 import 'package:vental_go/core/localization/app_localizations.dart';
 import 'package:vental_go/core/maps/map_widget.dart';
@@ -31,9 +30,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
       final position = await LocationService.getCurrentPosition();
       if (!mounted) return;
       setState(() => _driverPosition = position);
-    } catch (_) {
-      // TODO: показать ошибку доступа к геолокации в UI
-    }
+    } catch (_) {}
   }
 
   void _onToggleOnline(bool value) {
@@ -42,7 +39,6 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
       isSearchingOrder = value;
     });
     if (value) {
-      // TODO: заменить на реальную подписку через WebSocket на бэкенде
       Future.delayed(const Duration(seconds: 2), _showIncomingOrder);
     }
   }
@@ -57,7 +53,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
       builder: (_) => IncomingOrderCard(
         fromAddress: 'ул. Мангилик Ел, 28',
         toAddress: 'ул. Кабанбай батыра, 15',
-        driverEarnings: 890, // TODO: TaxiPricingCalculator.driverEarningsCard(realPrice)
+        driverEarnings: 890,
         onAccept: () => Navigator.pop(context),
         onDecline: () => Navigator.pop(context),
       ),

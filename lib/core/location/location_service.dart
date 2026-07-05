@@ -1,6 +1,12 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
+class LocationServiceDisabledException implements Exception {}
+
+class LocationPermissionDeniedException implements Exception {}
+
+class LocationPermissionDeniedForeverException implements Exception {}
+
 class LocationService {
   static Future<LatLng> getCurrentPosition() async {
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -32,9 +38,3 @@ class LocationService {
     ).map((p) => LatLng(p.latitude, p.longitude));
   }
 }
-
-class LocationServiceDisabledException implements Exception {}
-
-class LocationPermissionDeniedException implements Exception {}
-
-class LocationPermissionDeniedForeverException implements Exception {}

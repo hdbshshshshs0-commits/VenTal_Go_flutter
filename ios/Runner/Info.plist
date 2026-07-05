@@ -3,10 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>$(DEVELOPMENT_LANGUAGE)
-<key>NSLocationWhenInUseUsageDescription</key>
-<string>Приложению нужен доступ к геолокации, чтобы показать ваше местоположение на карте</string>
-</string>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Приложению нужен доступ к геолокации, чтобы показать ваше местоположение на карте</string>
 	<key>CFBundleDisplayName</key>
 	<string>Vental Go</string>
 	<key>CFBundleExecutable</key>
