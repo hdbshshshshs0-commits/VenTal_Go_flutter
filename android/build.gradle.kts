@@ -17,11 +17,9 @@ subprojects {
 }
 
 subprojects {
-    plugins.withType<JavaBasePlugin> {
-        extensions.configure<JavaPluginExtension> {
-            toolchain {
-                languageVersion.set(JavaLanguageVersion.of(21))
-            }
+    plugins.withId("com.android.library") {
+        extensions.findByType(JavaPluginExtension::class.java)?.toolchain {
+            languageVersion.set(JavaLanguageVersion.of(21))
         }
     }
 }
