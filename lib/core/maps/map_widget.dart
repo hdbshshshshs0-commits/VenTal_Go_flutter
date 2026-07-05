@@ -53,7 +53,6 @@ class _AppMapWidgetState extends State<AppMapWidget> {
           lineColor: '#4A6CF7',
           lineWidth: 4.0,
           lineOpacity: 0.9,
-          lineCap: 'round',
           lineJoin: 'round',
         ),
       );
