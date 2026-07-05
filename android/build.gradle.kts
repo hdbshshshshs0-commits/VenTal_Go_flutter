@@ -16,16 +16,11 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
-subprojects {
-    plugins.withId("com.android.library") {
-        extensions.findByType(JavaPluginExtension::class.java)?.toolchain {
-            languageVersion.set(JavaLanguageVersion.of(21))
-        }
-        extensions.configure<com.android.build.gradle.LibraryExtension> {
-            compileOptions {
-                sourceCompatibility = JavaVersion.VERSION_17
-                targetCompatibility = JavaVersion.VERSION_17
-            }
+gradle.projectsEvaluated {
+    subprojects {
+        tasks.withType<JavaCompile>().configureEach {
+            sourceCompatibility = "17"
+            targetCompatibility = "17"
         }
     }
 }
