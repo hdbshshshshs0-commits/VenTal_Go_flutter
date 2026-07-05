@@ -25,14 +25,6 @@ subprojects {
             }
         }
     }
-    plugins.withId("com.android.application") {
-        extensions.configure<com.android.build.gradle.BaseExtension> {
-            compileOptions {
-                sourceCompatibility = JavaVersion.VERSION_17
-                targetCompatibility = JavaVersion.VERSION_17
-            }
-        }
-    }
 }
 
 tasks.register<Delete>("clean") {
