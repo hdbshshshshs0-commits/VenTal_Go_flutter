@@ -69,7 +69,7 @@ class _AppMapWidgetState extends State<AppMapWidget> {
             target: widget.initialPosition,
             zoom: widget.initialZoom,
           ),
-          styleString: 'https://demotiles.maplibre.org/style.json',
+          styleString: 'asset://assets/map/style.json',
           myLocationEnabled: true,
           onMapCreated: (controller) => _controller = controller,
           onStyleLoadedCallback: () {
