@@ -3,7 +3,7 @@ import 'package:vental_go/core/theme/app_colors.dart';
 import 'package:vental_go/core/localization/app_localizations.dart';
 import 'package:vental_go/features/taxi/data/models/payment_method_model.dart';
 import 'package:vental_go/features/taxi/presentation/widgets/payment_method_selector.dart';
-import 'package:vental_go/features/main_hub/presentation/screens/main_hub_screen.dart';
+import 'package:vental_go/core/widgets/order_success_screen.dart';
 
 class FoodCheckoutScreen extends StatefulWidget {
   const FoodCheckoutScreen({super.key});
@@ -23,7 +23,10 @@ class _FoodCheckoutScreenState extends State<FoodCheckoutScreen> {
   }
 
   void _confirm() {
-    Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const MainHubScreen()), (route) => false);
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const OrderSuccessScreen(
+      titleKey: 'food_success_title',
+      subtitleKey: 'food_success_subtitle',
+    )));
   }
 
   @override

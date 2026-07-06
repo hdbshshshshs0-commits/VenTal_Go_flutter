@@ -3,7 +3,6 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:vental_go/core/theme/app_colors.dart';
 import 'package:vental_go/core/localization/app_localizations.dart';
 import 'package:vental_go/core/maps/map_widget.dart';
-import 'package:vental_go/core/location/location_service.dart';
 import '../widgets/online_offline_toggle.dart';
 import '../widgets/incoming_order_card.dart';
 
@@ -18,20 +17,6 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   LatLng? _driverPosition;
   bool isOnline = false;
   bool isSearchingOrder = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _initLocation();
-  }
-
-  Future<void> _initLocation() async {
-    try {
-      final position = await LocationService.getCurrentPosition();
-      if (!mounted) return;
-      setState(() => _driverPosition = position);
-    } catch (_) {}
-  }
 
   void _onToggleOnline(bool value) {
     setState(() {
@@ -67,9 +52,10 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
       body: Stack(
         children: [
           Positioned.fill(
-            child: _driverPosition == null
-                ? Container(color: AppColors.divider, child: const Center(child: CircularProgressIndicator(strokeWidth: 2)))
-                : AppMapWidget(initialPosition: _driverPosition!),
+            child: AppMapWidget(
+              initialPosition: _driverPosition,
+              onUserLocationFound: (position) => setState(() => _driverPosition = position),
+            ),
           ),
           SafeArea(
             child: Padding(

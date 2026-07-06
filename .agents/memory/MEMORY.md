@@ -1,0 +1,1 @@
+- [VenTal Go Flutter stack](vental-go-stack.md) — Flutter + MapLibre + Provider; http must be explicit in pubspec, APK build needs Android SDK (not available on Replit).

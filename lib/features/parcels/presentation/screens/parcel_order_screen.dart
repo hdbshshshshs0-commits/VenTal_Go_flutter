@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:vental_go/core/theme/app_colors.dart';
 import 'package:vental_go/core/localization/app_localizations.dart';
-import 'package:vental_go/features/main_hub/presentation/screens/main_hub_screen.dart';
+import 'package:vental_go/core/location/default_location.dart';
+import 'package:vental_go/core/geocoding/geocoding_service.dart';
 import '../../data/models/parcel_model.dart';
+import '../../data/models/parcel_contact_model.dart';
 import '../../data/pricing/parcel_pricing_calculator.dart';
 import '../widgets/parcel_category_selector.dart';
-import '../widgets/parcel_delivery_type_toggle.dart';
 import '../widgets/parcel_contact_form.dart';
+import '../widgets/delivery_scope_selector.dart';
+import 'parcel_route_screen.dart';
 
 class ParcelOrderScreen extends StatefulWidget {
   const ParcelOrderScreen({super.key});
@@ -17,54 +20,149 @@ class ParcelOrderScreen extends StatefulWidget {
 }
 
 class _ParcelOrderScreenState extends State<ParcelOrderScreen> {
+  int _step = 0;
+
   ParcelCategory _category = ParcelCategory.upTo5kg;
-  ParcelDeliveryType _deliveryType = ParcelDeliveryType.toAddress;
+  DeliveryScope _scope = DeliveryScope.doorToDoor;
 
-  final _senderName = TextEditingController();
-  final _senderPhone = TextEditingController();
-  final _senderEntrance = TextEditingController();
-  final _senderFloor = TextEditingController();
-  final _senderApartment = TextEditingController();
+  ParcelContactModel? _sender;
+  ParcelContactModel? _receiver;
 
-  final _receiverName = TextEditingController();
-  final _receiverPhone = TextEditingController();
-  final _receiverEntrance = TextEditingController();
-  final _receiverFloor = TextEditingController();
-  final _receiverApartment = TextEditingController();
+  bool _navigating = false;
 
-  final _commentController = TextEditingController();
+  bool get _senderReady => _sender?.isComplete ?? false;
+  bool get _receiverReady => _receiver?.isComplete ?? false;
 
-  LatLng? _senderLatLng;
-  LatLng? _receiverLatLng;
+  Future<void> _goToRoute() async {
+    if (_navigating) return;
+    setState(() => _navigating = true);
 
-  bool get _addressesReady => _senderLatLng != null && _receiverLatLng != null;
+    LatLng? fromPos;
+    LatLng? toPos;
 
-  @override
-  void dispose() {
-    for (final c in [
-      _senderName, _senderPhone, _senderEntrance, _senderFloor, _senderApartment,
-      _receiverName, _receiverPhone, _receiverEntrance, _receiverFloor, _receiverApartment,
-      _commentController,
-    ]) {
-      c.dispose();
+    final senderAddr = _sender?.address ?? '';
+    final receiverAddr = _receiver?.address ?? '';
+
+    if (senderAddr.isNotEmpty) {
+      final results = await GeocodingService.search(senderAddr);
+      if (results.isNotEmpty) fromPos = results.first.position;
     }
-    super.dispose();
+    if (receiverAddr.isNotEmpty) {
+      final results = await GeocodingService.search(receiverAddr);
+      if (results.isNotEmpty) toPos = results.first.position;
+    }
+
+    fromPos ??= DefaultLocation.center;
+    toPos ??= DefaultLocation.center;
+
+    final deliveryType = _scope == DeliveryScope.doorToDoor
+        ? ParcelDeliveryType.doorToDoor
+        : ParcelDeliveryType.toAddress;
+    final price = ParcelPricingCalculator.calculate(category: _category, deliveryType: deliveryType);
+
+    if (!mounted) return;
+    setState(() => _navigating = false);
+
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => ParcelRouteScreen(
+        fromPosition: fromPos!,
+        toPosition: toPos!,
+        price: price,
+      ),
+    ));
   }
 
-  void _placeOrder() {
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const MainHubScreen()),
-      (route) => false,
+  Widget _buildStep0() {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+      children: [
+        ParcelCategorySelector(
+          selected: _category,
+          onChanged: (v) => setState(() => _category = v),
+        ),
+        const SizedBox(height: 32),
+        SizedBox(
+          width: double.infinity,
+          height: 52,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+            onPressed: () => setState(() => _step = 1),
+            child: Text(context.l10n.t('back') == 'Назад' ? 'Далее' : 'Next',
+                style: const TextStyle(color: AppColors.textLight, fontWeight: FontWeight.w700)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStep1() {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+      children: [
+        DeliveryScopeSelector(
+          selected: _scope,
+          onSelect: (s) => setState(() => _scope = s),
+        ),
+        const SizedBox(height: 20),
+        ParcelContactForm(
+          titleKey: 'parcel_sender_title',
+          showDetailFields: _scope == DeliveryScope.doorToDoor,
+          onChanged: (m) => setState(() => _sender = m),
+        ),
+        const SizedBox(height: 24),
+        SizedBox(
+          width: double.infinity,
+          height: 52,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              disabledBackgroundColor: AppColors.primary.withAlpha(100),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+            onPressed: _senderReady ? () => setState(() => _step = 2) : null,
+            child: Text(context.l10n.t('back') == 'Назад' ? 'Далее' : 'Next',
+                style: const TextStyle(color: AppColors.textLight, fontWeight: FontWeight.w700)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStep2() {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+      children: [
+        ParcelContactForm(
+          titleKey: 'parcel_receiver_title',
+          showDetailFields: _scope == DeliveryScope.doorToDoor,
+          onChanged: (m) => setState(() => _receiver = m),
+        ),
+        const SizedBox(height: 24),
+        SizedBox(
+          width: double.infinity,
+          height: 52,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              disabledBackgroundColor: AppColors.primary.withAlpha(100),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+            onPressed: _receiverReady && !_navigating ? _goToRoute : null,
+            child: _navigating
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : Text(context.l10n.t('parcel_order_button'),
+                    style: const TextStyle(color: AppColors.textLight, fontWeight: FontWeight.w700)),
+          ),
+        ),
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final price = ParcelPricingCalculator.calculate(
-      category: _category,
-      deliveryType: _deliveryType,
-    );
-
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -72,86 +170,20 @@ class _ParcelOrderScreenState extends State<ParcelOrderScreen> {
         elevation: 0,
         foregroundColor: AppColors.textDark,
         title: Text(context.l10n.t('parcel_title')),
+        leading: _step > 0
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                onPressed: () => setState(() => _step--),
+              )
+            : null,
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
+      body: IndexedStack(
+        index: _step,
         children: [
-          ParcelCategorySelector(
-            selected: _category,
-            onChanged: (v) => setState(() => _category = v),
-          ),
-          const SizedBox(height: 20),
-          ParcelDeliveryTypeToggle(
-            selected: _deliveryType,
-            onChanged: (v) => setState(() => _deliveryType = v),
-          ),
-          const SizedBox(height: 24),
-          ParcelContactForm(
-            titleKey: 'parcel_sender_title',
-            nameController: _senderName,
-            phoneController: _senderPhone,
-            entranceController: _senderEntrance,
-            floorController: _senderFloor,
-            apartmentController: _senderApartment,
-            onAddressSelected: (address, latLng) {
-              setState(() => _senderLatLng = latLng);
-            },
-          ),
-          const SizedBox(height: 24),
-          ParcelContactForm(
-            titleKey: 'parcel_receiver_title',
-            nameController: _receiverName,
-            phoneController: _receiverPhone,
-            entranceController: _receiverEntrance,
-            floorController: _receiverFloor,
-            apartmentController: _receiverApartment,
-            onAddressSelected: (address, latLng) {
-              setState(() => _receiverLatLng = latLng);
-            },
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _commentController,
-            maxLines: 3,
-            decoration: InputDecoration(
-              hintText: context.l10n.t('parcel_comment_hint'),
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide.none,
-              ),
-            ),
-          ),
+          _buildStep0(),
+          _buildStep1(),
+          _buildStep2(),
         ],
-      ),
-      bottomNavigationBar: Container(
-        color: Colors.white,
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-        child: SafeArea(
-          top: false,
-          child: SizedBox(
-            height: 52,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                disabledBackgroundColor: AppColors.primary.withAlpha(100),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              ),
-              onPressed: _addressesReady ? _placeOrder : null,
-              child: Text(
-                _addressesReady
-                    ? '${context.l10n.t('parcel_order_button')} $price ${context.l10n.t('currency_tg')}'
-                    : context.l10n.t('parcel_order_button'),
-                style: const TextStyle(
-                  color: AppColors.textLight,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
-                ),
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }

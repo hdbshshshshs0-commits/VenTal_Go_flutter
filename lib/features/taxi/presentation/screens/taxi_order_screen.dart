@@ -2,9 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:vental_go/core/theme/app_colors.dart';
-import 'package:vental_go/core/localization/app_localizations.dart';
 import 'package:vental_go/core/maps/map_widget.dart';
-import 'package:vental_go/core/location/location_service.dart';
 import 'package:vental_go/core/geocoding/geocoding_service.dart';
 import 'package:vental_go/core/routing/osrm_service.dart';
 import '../../data/models/car_class_model.dart';
@@ -20,9 +18,7 @@ class TaxiOrderScreen extends StatefulWidget {
 }
 
 class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
-  bool _dataLoaded = false;
   LatLng? _userPosition;
-  String? _locationErrorKey;
 
   LatLng? _fromLatLng;
   LatLng? _toLatLng;
@@ -32,29 +28,6 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
   double distanceKm = 0;
   List<LatLng>? _routePoints;
   MapLibreMapController? _mapController;
-
-  @override
-  void initState() {
-    super.initState();
-    _init();
-  }
-
-  Future<void> _init() async {
-    try {
-      final position = await LocationService.getCurrentPosition();
-      if (!mounted) return;
-      setState(() => _userPosition = position);
-    } on LocationServiceDisabledException {
-      setState(() => _locationErrorKey = 'location_disabled');
-    } on LocationPermissionDeniedException {
-      setState(() => _locationErrorKey = 'location_denied');
-    } on LocationPermissionDeniedForeverException {
-      setState(() => _locationErrorKey = 'location_denied_forever');
-    }
-    await Future.delayed(const Duration(milliseconds: 400));
-    if (!mounted) return;
-    setState(() => _dataLoaded = true);
-  }
 
   Future<void> _updateRoute() async {
     final from = _fromLatLng;
@@ -68,8 +41,7 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
 
     setState(() {
       _routePoints = result?.geometry;
-      distanceKm = result?.distanceKm ??
-          GeocodingService.calculateDistanceKm(from, to);
+      distanceKm = result?.distanceKm ?? GeocodingService.calculateDistanceKm(from, to);
     });
 
     _fitCameraToRoute(from, to);
@@ -111,27 +83,13 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
       body: Stack(
         children: [
           Positioned.fill(
-            child: _userPosition == null
-                ? Container(
-                    color: AppColors.divider,
-                    child: Center(
-                      child: _locationErrorKey != null
-                          ? Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Text(
-                                context.l10n.t(_locationErrorKey!),
-                                textAlign: TextAlign.center,
-                              ),
-                            )
-                          : const CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  )
-                : AppMapWidget(
-                    initialPosition: _userPosition!,
-                    showCenterPin: false,
-                    routePoints: _routePoints,
-                    onMapReady: (controller) => _mapController = controller,
-                  ),
+            child: AppMapWidget(
+              initialPosition: _userPosition,
+              showCenterPin: false,
+              routePoints: _routePoints,
+              onMapReady: (controller) => _mapController = controller,
+              onUserLocationFound: (position) => setState(() => _userPosition = position),
+            ),
           ),
           Positioned(
             top: 0,
@@ -155,7 +113,7 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
             right: 0,
             bottom: 0,
             child: CarClassBottomSheet(
-              dataLoaded: _dataLoaded,
+              dataLoaded: true,
               cityType: cityType,
               biasPosition: _userPosition,
               onFromSelected: (address, latLng) {

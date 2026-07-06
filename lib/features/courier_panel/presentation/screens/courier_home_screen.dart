@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:vental_go/core/theme/app_colors.dart';
 import 'package:vental_go/core/maps/map_widget.dart';
-import 'package:vental_go/core/location/location_service.dart';
 import '../../data/models/courier_order_status.dart';
 import '../widgets/courier_order_bottom_sheet.dart';
 
@@ -17,20 +16,6 @@ class _CourierHomeScreenState extends State<CourierHomeScreen> {
   LatLng? _position;
   CourierOrderStatus _status = CourierOrderStatus.offline;
   int _distanceMeters = 500;
-
-  @override
-  void initState() {
-    super.initState();
-    _initLocation();
-  }
-
-  Future<void> _initLocation() async {
-    try {
-      final position = await LocationService.getCurrentPosition();
-      if (!mounted) return;
-      setState(() => _position = position);
-    } catch (_) {}
-  }
 
   void _goOnline() {
     setState(() => _status = CourierOrderStatus.searching);
@@ -81,9 +66,10 @@ class _CourierHomeScreenState extends State<CourierHomeScreen> {
       body: Stack(
         children: [
           Positioned.fill(
-            child: _position == null
-                ? Container(color: AppColors.divider, child: const Center(child: CircularProgressIndicator(strokeWidth: 2)))
-                : AppMapWidget(initialPosition: _position!),
+            child: AppMapWidget(
+              initialPosition: _position,
+              onUserLocationFound: (position) => setState(() => _position = position),
+            ),
           ),
           Positioned(
             left: 0,

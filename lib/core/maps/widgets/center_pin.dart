@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:vental_go/core/theme/app_colors.dart';
 
+/// Своё изображение пина — положить файл в assets/images/icons/center_pin.png
 class CenterPin extends StatelessWidget {
   const CenterPin({super.key});
 
@@ -10,25 +10,7 @@ class CenterPin extends StatelessWidget {
       child: Center(
         child: Padding(
           padding: const EdgeInsets.only(bottom: 32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 3),
-                  boxShadow: const [
-                    BoxShadow(color: AppColors.cardShadow, blurRadius: 8, offset: Offset(0, 3)),
-                  ],
-                ),
-                child: const Icon(Icons.location_on, color: Colors.white, size: 22),
-              ),
-              Container(width: 3, height: 14, color: AppColors.primary),
-            ],
-          ),
+          child: Image.asset('assets/images/icons/center_pin.png', width: 48, height: 64),
         ),
       ),
     );

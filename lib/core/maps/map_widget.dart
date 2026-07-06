@@ -1,22 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
+
 import 'package:vental_go/core/theme/app_colors.dart';
+import 'package:vental_go/core/location/location_service.dart';
+import 'package:vental_go/core/location/default_location.dart';
 import 'widgets/center_pin.dart';
+import 'widgets/locate_me_button.dart';
 
 class AppMapWidget extends StatefulWidget {
-  final LatLng initialPosition;
+  final LatLng? initialPosition; // null допустим — тогда старт с DefaultLocation
   final double initialZoom;
   final bool showCenterPin;
+  final bool showLocateButton;
   final List<LatLng>? routePoints;
   final void Function(MapLibreMapController controller)? onMapReady;
+  final ValueChanged<LatLng>? onUserLocationFound;
 
   const AppMapWidget({
     super.key,
-    required this.initialPosition,
+    this.initialPosition,
     this.initialZoom = 15,
     this.showCenterPin = false,
+    this.showLocateButton = true,
     this.routePoints,
     this.onMapReady,
+    this.onUserLocationFound,
   });
 
   @override
@@ -26,6 +34,7 @@ class AppMapWidget extends StatefulWidget {
 class _AppMapWidgetState extends State<AppMapWidget> {
   MapLibreMapController? _controller;
   bool _styleLoaded = false;
+  bool _locatingUser = false;
   Line? _routeLine;
 
   @override
@@ -50,8 +59,8 @@ class _AppMapWidgetState extends State<AppMapWidget> {
       _routeLine = await ctrl.addLine(
         LineOptions(
           geometry: points,
-          lineColor: '#4A6CF7',
-          lineWidth: 4.0,
+          lineColor: '#0B4429',
+          lineWidth: 4.5,
           lineOpacity: 0.9,
           lineJoin: 'round',
         ),
@@ -59,18 +68,35 @@ class _AppMapWidgetState extends State<AppMapWidget> {
     }
   }
 
+  /// Запрашивается ТОЛЬКО по нажатию на LocateMeButton — не при открытии экрана.
+  Future<void> _handleLocateMe() async {
+    setState(() => _locatingUser = true);
+    try {
+      final position = await LocationService.getCurrentPosition();
+      if (!mounted) return;
+      await _controller?.animateCamera(CameraUpdate.newLatLngZoom(position, 16));
+      widget.onUserLocationFound?.call(position);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Не удалось получить геолокацию')), // TODO: t-ключ через контекст диалога/снекбара
+      );
+    } finally {
+      if (mounted) setState(() => _locatingUser = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final startPosition = widget.initialPosition ?? DefaultLocation.center;
+
     return Stack(
       alignment: Alignment.center,
       children: [
         MapLibreMap(
-          initialCameraPosition: CameraPosition(
-            target: widget.initialPosition,
-            zoom: widget.initialZoom,
-          ),
+          initialCameraPosition: CameraPosition(target: startPosition, zoom: widget.initialZoom),
           styleString: 'asset://assets/map/style.json',
-          myLocationEnabled: true,
+          myLocationEnabled: false, // включаем синюю точку только после ручного разрешения через LocateMeButton
           onMapCreated: (controller) => _controller = controller,
           onStyleLoadedCallback: () {
             setState(() => _styleLoaded = true);
@@ -85,6 +111,12 @@ class _AppMapWidgetState extends State<AppMapWidget> {
           Container(
             color: AppColors.divider,
             child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          ),
+        if (widget.showLocateButton && _styleLoaded)
+          Positioned(
+            right: 16,
+            bottom: 16,
+            child: SafeArea(child: LocateMeButton(onTap: _handleLocateMe, isLoading: _locatingUser)),
           ),
       ],
     );
