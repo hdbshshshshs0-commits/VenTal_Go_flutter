@@ -69,7 +69,21 @@ class _AppMapWidgetState extends State<AppMapWidget> {
             target: widget.initialPosition,
             zoom: widget.initialZoom,
           ),
-          styleString: 'asset://assets/map/style.json',
+          styleString: '''
+{
+  "version": 8,
+  "sources": {},
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#ff0000"
+      }
+    }
+  ]
+}
+''',
           myLocationEnabled: true,
           onMapCreated: (controller) => _controller = controller,
           onStyleLoadedCallback: () {
