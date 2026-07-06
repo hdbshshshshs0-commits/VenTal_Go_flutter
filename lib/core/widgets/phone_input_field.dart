@@ -1,47 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// Маска ввода телефона: +7 ХХХ ХХХ ХХХХ.
-/// Используется везде в приложении, где вводится номер телефона
-/// (регистрация, посылки — отправитель/получатель, профиль).
+import 'package:vental_go/core/theme/app_colors.dart';
+
 class PhoneInputField extends StatefulWidget {
   final ValueChanged<String> onChanged;
-  final String? initialValue;
 
-  const PhoneInputField({super.key, required this.onChanged, this.initialValue});
+  const PhoneInputField({super.key, required this.onChanged});
 
   @override
   State<PhoneInputField> createState() => _PhoneInputFieldState();
 }
 
-class _PhoneMaskFormatter extends TextInputFormatter {
+/// Форматтер, который умеет отличать "удалили цифру" от "удалили
+/// автоматический пробел маски" — во втором случае убирает ещё и
+/// последнюю цифру, иначе Backspace на границе группы (после 3-й или
+/// 6-й цифры) выглядит так, будто ничего не удаляется.
+class _LocalPhoneMaskFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
-    final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
-    final trimmed = digits.length > 10 ? digits.substring(0, 10) : digits;
+    final oldDigits = oldValue.text.replaceAll(RegExp(r'\D'), '');
+    final newDigitsRaw = newValue.text.replaceAll(RegExp(r'\D'), '');
 
-    final buffer = StringBuffer('+7 ');
-    for (int i = 0; i < trimmed.length; i++) {
-      buffer.write(trimmed[i]);
+    final isDeleting = newValue.text.length < oldValue.text.length;
+    final onlySpaceWasRemoved = isDeleting && newDigitsRaw.length == oldDigits.length;
+
+    String digits;
+    if (onlySpaceWasRemoved && oldDigits.isNotEmpty) {
+      digits = oldDigits.substring(0, oldDigits.length - 1);
+    } else {
+      digits = newDigitsRaw.length > 10 ? newDigitsRaw.substring(0, 10) : newDigitsRaw;
+    }
+
+    final buffer = StringBuffer();
+    for (int i = 0; i < digits.length; i++) {
+      buffer.write(digits[i]);
       if (i == 2 || i == 5) buffer.write(' ');
     }
 
     final text = buffer.toString();
-    return TextEditingValue(
-      text: text,
-      selection: TextSelection.collapsed(offset: text.length),
-    );
+    return TextEditingValue(text: text, selection: TextSelection.collapsed(offset: text.length));
   }
 }
 
 class _PhoneInputFieldState extends State<PhoneInputField> {
-  late final TextEditingController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController(text: widget.initialValue ?? '+7 ');
-  }
+  final TextEditingController _controller = TextEditingController();
 
   @override
   void dispose() {
@@ -49,21 +52,36 @@ class _PhoneInputFieldState extends State<PhoneInputField> {
     super.dispose();
   }
 
+  void _handleChanged(String value) {
+    final digits = value.replaceAll(RegExp(r'\D'), '');
+    widget.onChanged('+7$digits');
+  }
+
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: _controller,
-      keyboardType: TextInputType.phone,
-      inputFormatters: [_PhoneMaskFormatter()],
-      onChanged: (value) {
-        final digitsOnly = value.replaceAll(RegExp(r'\D'), '');
-        widget.onChanged('+$digitsOnly');
-      },
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+    return Container(
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      child: Row(
+        children: [
+          const Text('+7', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+          const SizedBox(width: 8),
+          Container(width: 1, height: 24, color: AppColors.divider),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              controller: _controller,
+              keyboardType: TextInputType.number,
+              inputFormatters: [_LocalPhoneMaskFormatter()],
+              onChanged: _handleChanged,
+              decoration: const InputDecoration(
+                hintText: '700 123 4501',
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(vertical: 14),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
