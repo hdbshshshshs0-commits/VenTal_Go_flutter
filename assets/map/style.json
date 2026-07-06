@@ -9,7 +9,11 @@
   "sources": {
     "openmaptiles": {
       "type": "vector",
-      "url": "https://tiles.openfreemap.org/planet"
+      "tiles": [
+  "https://tiles.openfreemap.org/data/v3/{z}/{x}/{y}.pbf"
+],
+"minzoom": 0,
+"maxzoom": 14
     },
     "natural_earth_shaded_relief": {
       "maxzoom": 6,
