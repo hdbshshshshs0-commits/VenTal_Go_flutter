@@ -12,10 +12,10 @@ class PhoneInputField extends StatefulWidget {
   State<PhoneInputField> createState() => _PhoneInputFieldState();
 }
 
-/// Форматтер, который умеет отличать "удалили цифру" от "удалили
-/// автоматический пробел маски" — во втором случае убирает ещё и
-/// последнюю цифру, иначе Backspace на границе группы (после 3-й или
-/// 6-й цифры) выглядит так, будто ничего не удаляется.
+/// Форматтер группирует цифры как 3-3-2-2 (700 123 45 01) — привычный
+/// для Казахстана вид номера. Отдельно отличает "удалили цифру" от
+/// "удалили автоматический пробел маски", чтобы Backspace на границе
+/// группы не выглядел так, будто ничего не удаляется.
 class _LocalPhoneMaskFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
@@ -35,7 +35,7 @@ class _LocalPhoneMaskFormatter extends TextInputFormatter {
     final buffer = StringBuffer();
     for (int i = 0; i < digits.length; i++) {
       buffer.write(digits[i]);
-      if (i == 2 || i == 5) buffer.write(' ');
+      if (i == 2 || i == 5 || i == 7) buffer.write(' ');
     }
 
     final text = buffer.toString();
@@ -54,7 +54,7 @@ class _PhoneInputFieldState extends State<PhoneInputField> {
 
   void _handleChanged(String value) {
     final digits = value.replaceAll(RegExp(r'\D'), '');
-    widget.onChanged('+7$digits');
+    widget.onChanged(digits.isEmpty ? '' : '+7$digits');
   }
 
   @override
@@ -71,11 +71,13 @@ class _PhoneInputFieldState extends State<PhoneInputField> {
           Expanded(
             child: TextField(
               controller: _controller,
+              autofocus: false,
               keyboardType: TextInputType.number,
               inputFormatters: [_LocalPhoneMaskFormatter()],
               onChanged: _handleChanged,
               decoration: const InputDecoration(
-                hintText: '700 123 4501',
+                hintText: '___ ___ __ __',
+                hintStyle: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.w400),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(vertical: 14),
               ),
