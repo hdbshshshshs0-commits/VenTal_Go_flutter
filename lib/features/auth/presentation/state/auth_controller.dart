@@ -6,9 +6,20 @@ import '../../data/services/auth_service.dart';
 class AuthController extends ChangeNotifier {
   AuthUserModel? currentUser;
   bool isLoading = false;
+  bool isInitializing = true; // true пока проверяем сохранённую сессию на старте
   String? errorMessage;
 
+  AuthController() {
+    _restoreSession();
+  }
+
   bool get isLoggedIn => currentUser != null;
+
+  Future<void> _restoreSession() async {
+    currentUser = await AuthService.restoreSession();
+    isInitializing = false;
+    notifyListeners();
+  }
 
   Future<bool> login(String phone, String password) async {
     isLoading = true;
