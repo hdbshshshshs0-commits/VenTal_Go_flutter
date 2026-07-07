@@ -10,6 +10,9 @@ import 'package:vental_go/features/driver_panel/presentation/screens/driver_home
 import 'package:vental_go/features/restaurant_panel/presentation/screens/restaurant_orders_kanban_screen.dart';
 
 /// Направляет пользователя на нужный интерфейс по роли после логина.
+/// Пока auth.isInitializing == true — идёт проверка сохранённой сессии
+/// (secure storage); показываем лоадер вместо мгновенного перехода на
+/// LoginScreen, чтобы не было "мигания" логина при каждом холодном старте.
 /// Админ временно ведёт на главный экран клиента — отдельный
 /// админ-интерфейс не запрошен, TODO на будущее.
 class RoleRouter extends StatelessWidget {
@@ -18,8 +21,14 @@ class RoleRouter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthController>();
-    final user = auth.currentUser;
 
+    if (auth.isInitializing) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final user = auth.currentUser;
     if (user == null) return const LoginScreen();
 
     switch (user.role) {
