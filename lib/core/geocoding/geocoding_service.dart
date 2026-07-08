@@ -10,22 +10,21 @@ class AddressSuggestion {
   const AddressSuggestion({required this.displayName, required this.position});
 }
 
-/// Геокодирование через Photon (основной, https://photon.komoot.io) с
-/// fallback на Nominatim (https://nominatim.openstreetmap.org).
-/// Оба публичные бесплатные сервисы — при активном проде рекомендуется
-/// поднять свой инстанс Photon (github.com/komoot/photon), публичный
-/// демо-сервер троттлит при высокой нагрузке.
 class GeocodingService {
   static const String _photonUrl = 'https://photon.komoot.io/api';
   static const String _nominatimUrl = 'https://nominatim.openstreetmap.org/search';
 
-  static Future<List<AddressSuggestion>> search(String query, {LatLng? biasPosition}) async {
+  static Future<List<AddressSuggestion>> search(String query, {LatLng? biasPosition, String? cityName}) async {
     if (query.trim().length < 3) return [];
+
+    final effectiveQuery = (cityName != null && !query.toLowerCase().contains(cityName.toLowerCase()))
+        ? '$query, $cityName'
+        : query;
 
     try {
       final uri = Uri.parse(_photonUrl).replace(queryParameters: {
-        'q': query,
-        'limit': '5',
+        'q': effectiveQuery,
+        'limit': '8',
         'lang': 'ru',
         if (biasPosition != null) 'lat': biasPosition.latitude.toString(),
         if (biasPosition != null) 'lon': biasPosition.longitude.toString(),
@@ -35,14 +34,23 @@ class GeocodingService {
         final data = jsonDecode(response.body);
         final features = data['features'] as List;
         if (features.isNotEmpty) {
-          return features.map((f) => _fromPhotonFeature(f)).toList();
+          final results = features.map((f) => _fromPhotonFeature(f)).toList();
+          return _filterByCity(results, cityName);
         }
       }
     } catch (_) {
       // переходим к fallback ниже
     }
 
-    return _searchNominatim(query);
+    final fallback = await _searchNominatim(effectiveQuery);
+    return _filterByCity(fallback, cityName);
+  }
+
+  static List<AddressSuggestion> _filterByCity(List<AddressSuggestion> results, String? cityName) {
+    if (cityName == null) return results;
+    final filtered = results.where((r) => r.displayName.toLowerCase().contains(cityName.toLowerCase())).toList();
+    // если фильтр вычистил всё (сервис не указал город в ответе) — лучше нефильтрованные варианты, чем пусто
+    return filtered.isNotEmpty ? filtered : results;
   }
 
   static AddressSuggestion _fromPhotonFeature(Map<String, dynamic> feature) {
@@ -63,7 +71,7 @@ class GeocodingService {
       final uri = Uri.parse(_nominatimUrl).replace(queryParameters: {
         'q': query,
         'format': 'json',
-        'limit': '5',
+        'limit': '8',
         'accept-language': 'ru',
       });
       final response = await http.get(
@@ -86,7 +94,6 @@ class GeocodingService {
     return [];
   }
 
-  /// Прямое расстояние (гаверсинус) — fallback, если OSRM недоступен.
   static double calculateDistanceKm(LatLng from, LatLng to) {
     const earthRadiusKm = 6371.0;
     final dLat = _degToRad(to.latitude - from.latitude);
