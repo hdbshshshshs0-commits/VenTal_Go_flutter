@@ -10,6 +10,8 @@ class AddressAutocompleteField extends StatefulWidget {
   final IconData icon;
   final String hintKey;
   final LatLng? biasPosition;
+  final String? cityName;
+  final String? initialValue;
   final void Function(String address, LatLng coordinates) onAddressSelected;
 
   const AddressAutocompleteField({
@@ -18,6 +20,8 @@ class AddressAutocompleteField extends StatefulWidget {
     required this.hintKey,
     required this.onAddressSelected,
     this.biasPosition,
+    this.cityName,
+    this.initialValue,
   });
 
   @override
@@ -30,6 +34,14 @@ class _AddressAutocompleteFieldState extends State<AddressAutocompleteField> {
   Timer? _debounce;
   bool _loading = false;
 
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialValue != null && widget.initialValue!.isNotEmpty) {
+      _controller.text = widget.initialValue!;
+    }
+  }
+
   void _onChanged(String value) {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 400), () async {
@@ -38,7 +50,7 @@ class _AddressAutocompleteFieldState extends State<AddressAutocompleteField> {
         return;
       }
       setState(() => _loading = true);
-      final results = await GeocodingService.search(value, biasPosition: widget.biasPosition);
+      final results = await GeocodingService.search(value, biasPosition: widget.biasPosition, cityName: widget.cityName);
       if (!mounted) return;
       setState(() {
         _suggestions = results;
