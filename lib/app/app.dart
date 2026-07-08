@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'package:vental_go/core/theme/app_colors.dart';
 import 'package:vental_go/core/localization/locale_controller.dart';
+import 'package:vental_go/core/city/city_controller.dart';
 import 'package:vental_go/features/auth/presentation/state/auth_controller.dart';
 import 'role_router.dart';
 
@@ -15,6 +16,7 @@ class SuperApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => LocaleController()),
         ChangeNotifierProvider(create: (_) => AuthController()),
+        ChangeNotifierProvider(create: (_) => CityController()..load()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
