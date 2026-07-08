@@ -37,6 +37,27 @@ class _AppMapWidgetState extends State<AppMapWidget> {
   bool _locatingUser = false;
   Line? _routeLine;
 
+  static const String _osmStyle = '''
+{
+  "version": 8,
+  "sources": {
+    "osm-tiles": {
+      "type": "raster",
+      "tiles": ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+      "tileSize": 256,
+      "attribution": "© OpenStreetMap contributors"
+    }
+  },
+  "layers": [
+    {
+      "id": "osm-tiles-layer",
+      "type": "raster",
+      "source": "osm-tiles"
+    }
+  ]
+}
+''';
+
   @override
   void didUpdateWidget(AppMapWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -95,7 +116,7 @@ class _AppMapWidgetState extends State<AppMapWidget> {
       children: [
         MapLibreMap(
           initialCameraPosition: CameraPosition(target: startPosition, zoom: widget.initialZoom),
-          styleString: 'asset://assets/map/style.json',
+          styleString: _osmStyle,
           myLocationEnabled: false, // включаем синюю точку только после ручного разрешения через LocateMeButton
           onMapCreated: (controller) => _controller = controller,
           onStyleLoadedCallback: () {
