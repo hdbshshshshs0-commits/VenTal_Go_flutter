@@ -7,6 +7,7 @@ import 'package:vental_go/features/auth/presentation/state/auth_controller.dart'
 import 'package:vental_go/features/auth/presentation/screens/login_screen.dart';
 import '../widgets/account_card.dart';
 import '../widgets/profile_section_card.dart';
+import 'addresses_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -41,6 +42,19 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     );
   }
 
+  void _handleSectionTap(String key) {
+    switch (key) {
+      case 'profile_section_addresses':
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const AddressesScreen()),
+        );
+        break;
+      default:
+        // TODO: остальные переходы (account, payment, history, settings, support)
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final sections = [
@@ -70,7 +84,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             ...sections.map((s) => ProfileSectionCard(
                   icon: s.icon,
                   label: context.l10n.t(s.key),
-                  onTap: () {}, // TODO: переходы на реальные экраны разделов
+                  onTap: () => _handleSectionTap(s.key),
                 )),
             const SizedBox(height: 20),
             SizedBox(
