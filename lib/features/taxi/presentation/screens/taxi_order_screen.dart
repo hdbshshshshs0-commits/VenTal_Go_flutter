@@ -117,6 +117,21 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
     );
   }
 
+  /// Вызывается при перетаскивании карты, когда центр-пин активен
+  /// (на шагах выбора адреса откуда/куда). Обновляет координаты сразу,
+  /// адрес — как только приходит реверс-геокодинг.
+  void _handleCenterChanged(LatLng position, String? address) {
+    setState(() {
+      if (_step == _OrderStep.pickingFrom) {
+        _fromLatLng = position;
+        if (address != null) _fromAddress = address;
+      } else if (_step == _OrderStep.pickingTo) {
+        _toLatLng = position;
+        if (address != null) _toAddress = address;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final cityController = context.watch<CityController>();
@@ -133,6 +148,7 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
               routePoints: _routePoints,
               onMapReady: (controller) => _mapController = controller,
               onUserLocationFound: (position) => setState(() => _userPosition = position),
+              onCenterChanged: _step == _OrderStep.choosingClass ? null : _handleCenterChanged,
             ),
           ),
           Positioned(
@@ -196,6 +212,7 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
             titleKey: 'taxi_from_title',
             biasPosition: _userPosition ?? _fromLatLng,
             cityName: cityName,
+            initialAddress: _fromAddress,
             showLocateButton: true,
             isLocating: _locatingUser,
             onLocateTap: _handleLocateFrom,
@@ -220,6 +237,7 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
             titleKey: 'taxi_to_title',
             biasPosition: _fromLatLng,
             cityName: cityName,
+            initialAddress: _toAddress,
             canConfirm: _toLatLng != null,
             onConfirm: _confirmTo,
             onAddressSelected: (address, latLng) {
