@@ -11,6 +11,7 @@ class AddressStepSheet extends StatelessWidget {
   final String titleKey;
   final LatLng? biasPosition;
   final String? cityName;
+  final String? initialAddress;
   final bool showLocateButton;
   final bool isLocating;
   final VoidCallback? onLocateTap;
@@ -28,6 +29,7 @@ class AddressStepSheet extends StatelessWidget {
     required this.onAddressSelected,
     this.biasPosition,
     this.cityName,
+    this.initialAddress,
     this.showLocateButton = false,
     this.isLocating = false,
     this.onLocateTap,
@@ -60,6 +62,7 @@ class AddressStepSheet extends StatelessWidget {
                   hintKey: hintKey,
                   biasPosition: biasPosition,
                   cityName: cityName,
+                  initialValue: initialAddress,
                   onAddressSelected: onAddressSelected,
                 ),
               ),
