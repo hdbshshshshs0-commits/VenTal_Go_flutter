@@ -30,6 +30,7 @@ class AddressAutocompleteField extends StatefulWidget {
 
 class _AddressAutocompleteFieldState extends State<AddressAutocompleteField> {
   final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
   List<AddressSuggestion> _suggestions = [];
   Timer? _debounce;
   bool _loading = false;
@@ -39,6 +40,19 @@ class _AddressAutocompleteFieldState extends State<AddressAutocompleteField> {
     super.initState();
     if (widget.initialValue != null && widget.initialValue!.isNotEmpty) {
       _controller.text = widget.initialValue!;
+    }
+  }
+
+  @override
+  void didUpdateWidget(AddressAutocompleteField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Обновляем текст, если адрес пришёл извне (например, с перетаскивания
+    // карты центр-пином), но только если пользователь сейчас не печатает сам.
+    if (widget.initialValue != oldWidget.initialValue &&
+        widget.initialValue != null &&
+        !_focusNode.hasFocus) {
+      _controller.text = widget.initialValue!;
+      setState(() => _suggestions = []);
     }
   }
 
@@ -69,6 +83,7 @@ class _AddressAutocompleteFieldState extends State<AddressAutocompleteField> {
   void dispose() {
     _debounce?.cancel();
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -91,6 +106,7 @@ class _AddressAutocompleteFieldState extends State<AddressAutocompleteField> {
               Expanded(
                 child: TextField(
                   controller: _controller,
+                  focusNode: _focusNode,
                   onChanged: _onChanged,
                   decoration: InputDecoration(hintText: context.l10n.t(widget.hintKey), border: InputBorder.none, isDense: true),
                 ),
