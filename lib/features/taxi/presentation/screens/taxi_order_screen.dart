@@ -165,7 +165,19 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
             right: 0,
             top: 0,
             bottom: 0,
-            child: _buildBottomContent(city.displayName),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 280),
+              switchInCurve: Curves.easeOut,
+              switchOutCurve: Curves.easeIn,
+              transitionBuilder: (child, animation) => FadeTransition(
+                opacity: animation,
+                child: SlideTransition(
+                  position: Tween<Offset>(begin: const Offset(0, 0.05), end: Offset.zero).animate(animation),
+                  child: child,
+                ),
+              ),
+              child: _buildBottomContent(city.displayName),
+            ),
           ),
         ],
       ),
@@ -176,9 +188,9 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
     switch (_step) {
       case _OrderStep.pickingFrom:
         return Align(
+          key: const ValueKey('from'),
           alignment: Alignment.bottomCenter,
           child: AddressStepSheet(
-            key: const ValueKey('from'),
             icon: Icons.trip_origin,
             hintKey: 'taxi_from',
             titleKey: 'taxi_from_title',
@@ -200,9 +212,9 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
         );
       case _OrderStep.pickingTo:
         return Align(
+          key: const ValueKey('to'),
           alignment: Alignment.bottomCenter,
           child: AddressStepSheet(
-            key: const ValueKey('to'),
             icon: Icons.location_on,
             hintKey: 'taxi_to',
             titleKey: 'taxi_to_title',
@@ -221,6 +233,7 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
         );
       case _OrderStep.choosingClass:
         return CarClassBottomSheet(
+          key: const ValueKey('class'),
           dataLoaded: true,
           cityType: cityType,
           biasPosition: _userPosition,

@@ -7,7 +7,6 @@ import '../../data/models/car_class_model.dart';
 import '../../data/models/payment_method_model.dart';
 import '../../data/pricing/taxi_pricing_calculator.dart';
 import 'address_autocomplete_field.dart';
-import 'car_class_card.dart';
 import 'payment_method_selector.dart';
 import 'price_breakdown_sheet.dart';
 import 'taxi_screen_skeleton.dart';
@@ -64,18 +63,22 @@ class CarClassBottomSheet extends StatelessWidget {
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             boxShadow: [BoxShadow(color: AppColors.cardShadow, blurRadius: 20, offset: Offset(0, -6))],
           ),
-          child: !dataLoaded
-              ? const TaxiScreenSkeleton()
-              : CustomScrollView(
-                  controller: scrollController,
-                  physics: const ClampingScrollPhysics(),
-                  slivers: [
-                    SliverToBoxAdapter(child: _buildDragHandle()),
-                    SliverToBoxAdapter(child: _buildClassStrip(context)),
-                    SliverToBoxAdapter(child: _buildOrderRow(context)),
-                    SliverToBoxAdapter(child: _buildExpandedContent(context)),
-                  ],
-                ),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            child: !dataLoaded
+                ? const TaxiScreenSkeleton(key: ValueKey('skeleton'))
+                : CustomScrollView(
+                    key: const ValueKey('content'),
+                    controller: scrollController,
+                    physics: const ClampingScrollPhysics(),
+                    slivers: [
+                      SliverToBoxAdapter(child: _buildDragHandle()),
+                      SliverToBoxAdapter(child: _buildClassStrip(context)),
+                      SliverToBoxAdapter(child: _buildOrderRow(context)),
+                      SliverToBoxAdapter(child: _buildExpandedContent(context)),
+                    ],
+                  ),
+          ),
         );
       },
     );
@@ -92,8 +95,6 @@ class CarClassBottomSheet extends StatelessWidget {
     );
   }
 
-  /// Горизонтальная лента классов — видна сразу, без разворачивания
-  /// (структура как у Яндекса), карточки компактные, в стиле Uber.
   Widget _buildClassStrip(BuildContext context) {
     final classes = TaxiPricingCalculator.classesFor(cityType);
 
@@ -113,6 +114,7 @@ class CarClassBottomSheet extends StatelessWidget {
             onTap: () => onClassSelected(pricing.carClass),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 150),
+              curve: Curves.easeOut,
               width: 84,
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               decoration: BoxDecoration(
@@ -144,7 +146,6 @@ class CarClassBottomSheet extends StatelessWidget {
     );
   }
 
-  /// Оплата + безымянная кнопка разбивки цены + кнопка заказа.
   Widget _buildOrderRow(BuildContext context) {
     final price = TaxiPricingCalculator.calculatePrice(
       cityType: cityType,
@@ -184,11 +185,15 @@ class CarClassBottomSheet extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
               ),
               onPressed: distanceKm > 0 ? onOrder : null,
-              child: Text(
-                distanceKm > 0
-                    ? '${context.l10n.t('taxi_order_button')} $price ${context.l10n.t('currency_tg')}'
-                    : context.l10n.t('taxi_order_button'),
-                style: const TextStyle(color: AppColors.textLight, fontWeight: FontWeight.w700, fontSize: 14),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: Text(
+                  distanceKm > 0
+                      ? '${context.l10n.t('taxi_order_button')} $price ${context.l10n.t('currency_tg')}'
+                      : context.l10n.t('taxi_order_button'),
+                  key: ValueKey(price),
+                  style: const TextStyle(color: AppColors.textLight, fontWeight: FontWeight.w700, fontSize: 14),
+                ),
               ),
             ),
           ),
@@ -221,15 +226,6 @@ class CarClassBottomSheet extends StatelessWidget {
             initialValue: toAddress,
             onAddressSelected: onToSelected,
           ),
-          const SizedBox(height: 16),
-          ...TaxiPricingCalculator.classesFor(cityType).map((pricing) {
-            return CarClassCard(
-              pricing: pricing,
-              distanceKm: distanceKm,
-              isSelected: pricing.carClass == selectedClass,
-              onTap: () => onClassSelected(pricing.carClass),
-            );
-          }),
         ],
       ),
     );

@@ -49,7 +49,6 @@ class GeocodingService {
   static List<AddressSuggestion> _filterByCity(List<AddressSuggestion> results, String? cityName) {
     if (cityName == null) return results;
     final filtered = results.where((r) => r.displayName.toLowerCase().contains(cityName.toLowerCase())).toList();
-    // если фильтр вычистил всё (сервис не указал город в ответе) — лучше нефильтрованные варианты, чем пусто
     return filtered.isNotEmpty ? filtered : results;
   }
 

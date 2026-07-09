@@ -11,7 +11,6 @@ class KzCity {
 class KzCities {
   KzCities._();
 
-  /// Ерейментау — главный/дефолтный город.
   static const KzCity ereymentau = KzCity(
     id: 'ereymentau',
     displayName: 'Ерейментау',

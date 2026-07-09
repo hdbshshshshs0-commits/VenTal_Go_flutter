@@ -44,7 +44,6 @@ class AddressesScreen extends StatelessWidget {
               onTap: () => CityPickerSheet.show(context),
             ),
           ),
-          // TODO: сюда позже — сохранённые адреса "Дом", "Работа" и т.д.
         ],
       ),
     );

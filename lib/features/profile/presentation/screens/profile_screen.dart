@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 import 'package:vental_go/core/theme/app_colors.dart';
 import 'package:vental_go/core/localization/app_localizations.dart';
-import 'package:vental_go/features/auth/presentation/state/auth_controller.dart';
-import 'package:vental_go/features/auth/presentation/screens/login_screen.dart';
+import 'package:vental_go/core/widgets/logout_button.dart';
 import '../widgets/account_card.dart';
 import '../widgets/profile_section_card.dart';
 import 'addresses_screen.dart';
@@ -31,15 +29,6 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   void dispose() {
     _controller.dispose();
     super.dispose();
-  }
-
-  Future<void> _logout() async {
-    await context.read<AuthController>().logout();
-    if (!mounted) return;
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-      (route) => false,
-    );
   }
 
   void _handleSectionTap(String key) {
@@ -87,20 +76,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                   onTap: () => _handleSectionTap(s.key),
                 )),
             const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: OutlinedButton.icon(
-                onPressed: _logout,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.error,
-                  side: const BorderSide(color: AppColors.error),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-                icon: const Icon(Icons.logout_rounded),
-                label: Text(context.l10n.t('profile_logout')),
-              ),
-            ),
+            const LogoutButton(),
           ],
         ),
       ),
