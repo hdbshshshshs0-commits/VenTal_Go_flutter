@@ -46,6 +46,51 @@ class GeocodingService {
     return _filterByCity(fallback, cityName);
   }
 
+/// Реверс-геокодинг: координаты → адрес. Используется при перетаскивании
+  /// карты с центр-пином (drag-to-select адрес).
+  static Future<String?> reverseGeocode(LatLng position) async {
+    try {
+      final uri = Uri.parse('https://photon.komoot.io/reverse').replace(queryParameters: {
+        'lon': position.longitude.toString(),
+        'lat': position.latitude.toString(),
+        'lang': 'ru',
+      });
+      final response = await http.get(uri).timeout(const Duration(seconds: 6));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final features = data['features'] as List;
+        if (features.isNotEmpty) {
+          return _fromPhotonFeature(features.first).displayName;
+        }
+      }
+    } catch (_) {
+      // переходим к fallback ниже
+    }
+    return _reverseNominatim(position);
+  }
+
+  static Future<String?> _reverseNominatim(LatLng position) async {
+    try {
+      final uri = Uri.parse('https://nominatim.openstreetmap.org/reverse').replace(queryParameters: {
+        'lat': position.latitude.toString(),
+        'lon': position.longitude.toString(),
+        'format': 'json',
+        'accept-language': 'ru',
+      });
+      final response = await http.get(
+        uri,
+        headers: {'User-Agent': 'VenTalGo/1.0 (contact: support@vental.go)'},
+      ).timeout(const Duration(seconds: 6));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['display_name'] as String?;
+      }
+    } catch (_) {
+      // оба недоступны
+    }
+    return null;
+  }
+
   static List<AddressSuggestion> _filterByCity(List<AddressSuggestion> results, String? cityName) {
     if (cityName == null) return results;
     final filtered = results.where((r) => r.displayName.toLowerCase().contains(cityName.toLowerCase())).toList();
