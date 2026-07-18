@@ -39,6 +39,7 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
   PaymentMethod selectedPayment = PaymentMethod.cash;
   final CityType cityType = CityType.bigCity;
   double distanceKm = 0;
+  double? durationMin;
   List<LatLng>? _routePoints;
   MapLibreMapController? _mapController;
 
