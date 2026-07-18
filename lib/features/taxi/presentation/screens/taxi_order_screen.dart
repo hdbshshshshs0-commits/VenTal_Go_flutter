@@ -48,7 +48,7 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
     final to = _toLatLng;
     if (from == null || to == null) return;
 
-    setState(() { distanceKm = 0; _routePoints = null; });
+    setState(() { distanceKm = 0; durationMin = null; _routePoints = null; });
 
     final result = await OsrmService.getRoute(from, to);
     if (!mounted) return;
@@ -56,6 +56,7 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
     setState(() {
       _routePoints = result?.geometry;
       distanceKm = result?.distanceKm ?? GeocodingService.calculateDistanceKm(from, to);
+      durationMin = result?.durationMin;
     });
 
     _fitCameraToRoute(from, to);
@@ -131,6 +132,18 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
         if (address != null) _toAddress = address;
       }
     });
+  }
+
+  void _swapAddresses() {
+    setState(() {
+      final tempAddress = _fromAddress;
+      final tempLatLng = _fromLatLng;
+      _fromAddress = _toAddress;
+      _fromLatLng = _toLatLng;
+      _toAddress = tempAddress;
+      _toLatLng = tempLatLng;
+    });
+    _updateRoute();
   }
 
   @override
@@ -279,6 +292,8 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
           onPaymentChanged: (p) => setState(() => selectedPayment = p),
           distanceKm: distanceKm,
           onOrder: _handleOrder,
+          onSwapAddresses: _swapAddresses,
+          durationMin: durationMin,
         );
     }
   }
