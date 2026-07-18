@@ -5,7 +5,7 @@
     <application
         android:label="VenTal Superapp"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="assets/images/icons/logo.png">
         <activity
             android:name=".MainActivity"
             android:exported="true"
