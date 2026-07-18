@@ -5,12 +5,11 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 class OsrmRouteResult {
   final List<LatLng> geometry;
   final double distanceKm;
+  final double durationMin;
 
-  const OsrmRouteResult({required this.geometry, required this.distanceKm});
+  const OsrmRouteResult({required this.geometry, required this.distanceKm, required this.durationMin});
 }
 
-/// Публичный демо-сервер OSRM (router.project-osrm.org) — без гарантий
-/// аптайма/лимитов. Для продакшена поднять свой инстанс OSRM.
 class OsrmService {
   static const String _baseUrl = 'https://router.project-osrm.org/route/v1/driving';
 
@@ -30,8 +29,13 @@ class OsrmService {
       final coords = route['geometry']['coordinates'] as List;
       final geometry = coords.map((c) => LatLng(c[1] as double, c[0] as double)).toList();
       final distanceMeters = route['distance'] as num;
+      final durationSeconds = route['duration'] as num;
 
-      return OsrmRouteResult(geometry: geometry, distanceKm: distanceMeters / 1000);
+      return OsrmRouteResult(
+        geometry: geometry,
+        distanceKm: distanceMeters / 1000,
+        durationMin: durationSeconds / 60,
+      );
     } catch (_) {
       return null;
     }
