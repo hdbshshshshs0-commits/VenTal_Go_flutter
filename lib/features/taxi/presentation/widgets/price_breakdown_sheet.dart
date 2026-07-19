@@ -33,8 +33,8 @@ class PriceBreakdownSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pricing = TaxiPricingCalculator.classesFor(cityType).firstWhere((p) => p.carClass == carClass);
-    final distanceCost = (pricing.kmRate * distanceKm).round();
-    final total = pricing.minPrice + distanceCost;
+    final distanceCost = (pricing.perKm * distanceKm).round();
+    final total = pricing.boarding + distanceCost;
 
     return Container(
       padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(context).padding.bottom + 20),
@@ -59,7 +59,7 @@ class PriceBreakdownSheet extends StatelessWidget {
             style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: AppColors.textDark),
           ),
           const SizedBox(height: 16),
-          _row(context, 'price_breakdown_boarding', '${pricing.minPrice} тг'),
+          _row(context, 'price_breakdown_boarding', '${pricing.boarding.round()} тг'),
           const SizedBox(height: 10),
           _row(context, 'price_breakdown_distance', '$distanceCost тг'),
           const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: Divider(height: 1)),
