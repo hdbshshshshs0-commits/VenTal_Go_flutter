@@ -21,6 +21,7 @@ const Map<String, String> enTranslations = {
   'car_class_comfort': 'Comfort',
   'car_class_comfort_plus': 'Comfort+',
   'car_class_business': 'Business',
+  'car_class_premium': 'Premium',
   'car_class_eco': 'Eco',
   'payment_card': 'Card',
   'payment_cash': 'Cash',
