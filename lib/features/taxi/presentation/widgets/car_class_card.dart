@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:vental_go/core/theme/app_colors.dart';
 import 'package:vental_go/core/localization/app_localizations.dart';
 import '../../data/models/car_class_model.dart';
+import '../../data/pricing/taxi_pricing_calculator.dart';
 
 class CarClassCard extends StatelessWidget {
   final CarClassPricing pricing;
   final double distanceKm;
-  final double? durationMin;
+  final double durationMin;
   final bool isSelected;
   final VoidCallback onTap;
 
@@ -16,13 +17,19 @@ class CarClassCard extends StatelessWidget {
     required this.distanceKm,
     required this.isSelected,
     required this.onTap,
-    this.durationMin,
+    this.durationMin = 0,
   });
 
   @override
   Widget build(BuildContext context) {
-    final price = (pricing.minPrice + pricing.kmRate * distanceKm).round();
-    final timeText = durationMin != null ? '${durationMin!.round()} ${context.l10n.t('taxi_min_short')}' : null;
+    final price = TaxiPricingCalculator.calculatePrice(
+      cityType: CityType.bigCity, // не влияет на цену, оставлено для сигнатуры
+      carClass: pricing.carClass,
+      distanceKm: distanceKm,
+      durationMin: durationMin,
+    ).round();
+
+    final timeText = durationMin > 0 ? '${durationMin.round()} ${context.l10n.t('taxi_min_short')}' : null;
 
     return GestureDetector(
       onTap: onTap,
