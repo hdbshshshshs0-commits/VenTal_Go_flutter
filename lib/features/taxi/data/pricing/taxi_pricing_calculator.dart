@@ -1,34 +1,90 @@
 import '../models/car_class_model.dart';
 
+class PriceBreakdown {
+  final double boarding;
+  final double distanceCost;
+  final double timeCost;
+  final double baseTotal;
+  final double demandMultiplier;
+  final bool multiplierApplied;
+  final double finalTotal;
+
+  const PriceBreakdown({
+    required this.boarding,
+    required this.distanceCost,
+    required this.timeCost,
+    required this.baseTotal,
+    required this.demandMultiplier,
+    required this.multiplierApplied,
+    required this.finalTotal,
+  });
+}
+
 class TaxiPricingCalculator {
-  static const Map<CityType, List<CarClassPricing>> _table = {
-    CityType.smallCity: [
-      CarClassPricing(carClass: CarClass.economy, minPrice: 500, kmRate: 60, photoPath: 'assets/images/cars/economy.png'),
-      CarClassPricing(carClass: CarClass.comfort, minPrice: 700, kmRate: 80, photoPath: 'assets/images/cars/comfort.png'),
-      CarClassPricing(carClass: CarClass.comfortPlus, minPrice: 900, kmRate: 100, photoPath: 'assets/images/cars/comfort_plus.png'),
-      CarClassPricing(carClass: CarClass.business, minPrice: 1100, kmRate: 120, photoPath: 'assets/images/cars/business.png'),
-      CarClassPricing(carClass: CarClass.eco, minPrice: 1035, kmRate: 115, photoPath: 'assets/images/cars/eco.png'),
-    ],
-    CityType.bigCity: [
-      CarClassPricing(carClass: CarClass.economy, minPrice: 1100, kmRate: 80, photoPath: 'assets/images/cars/economy.png'),
-      CarClassPricing(carClass: CarClass.comfort, minPrice: 1200, kmRate: 100, photoPath: 'assets/images/cars/comfort.png'),
-      CarClassPricing(carClass: CarClass.comfortPlus, minPrice: 1300, kmRate: 120, photoPath: 'assets/images/cars/comfort_plus.png'),
-      CarClassPricing(carClass: CarClass.business, minPrice: 1500, kmRate: 150, photoPath: 'assets/images/cars/business.png'),
-      CarClassPricing(carClass: CarClass.eco, minPrice: 1495, kmRate: 138, photoPath: 'assets/images/cars/eco.png'),
-    ],
-  };
+  // Единая тарифная сетка — цена не зависит от города (честная фикс. цена).
+  static const List<CarClassPricing> _table = [
+    CarClassPricing(carClass: CarClass.economy, boarding: 600, perKm: 60, perMin: 10, photoPath: 'assets/images/cars/economy.png'),
+    CarClassPricing(carClass: CarClass.comfort, boarding: 700, perKm: 70, perMin: 12, photoPath: 'assets/images/cars/comfort.png'),
+    CarClassPricing(carClass: CarClass.comfortPlus, boarding: 800, perKm: 80, perMin: 15, photoPath: 'assets/images/cars/comfort_plus.png'),
+    CarClassPricing(carClass: CarClass.business, boarding: 1200, perKm: 130, perMin: 25, photoPath: 'assets/images/cars/business.png'),
+    CarClassPricing(carClass: CarClass.premium, boarding: 1200, perKm: 200, perMin: 30, photoPath: 'assets/images/cars/premium.png'),
+    CarClassPricing(carClass: CarClass.eco, boarding: 700, perKm: 70, perMin: 12, photoPath: 'assets/images/cars/eco.png'),
+  ];
 
-  static const double cardCommissionRate = 0.06;
-  static const double taxRate = 0.04;
+  // Множитель спроса действует ТОЛЬКО в диапазоне (3 км; 15 км].
+  static const double demandMultiplierMinKm = 3.0;
+  static const double demandMultiplierMaxKm = 15.0;
 
-  static List<CarClassPricing> classesFor(CityType cityType) => _table[cityType]!;
+  /// cityType сохранён в сигнатуре для обратной совместимости вызовов,
+  /// но больше не влияет на цену — тариф единый по всей стране.
+  static List<CarClassPricing> classesFor(CityType cityType) => _table;
 
-  static int calculatePrice({required CityType cityType, required CarClass carClass, required double distanceKm}) {
-    final pricing = _table[cityType]!.firstWhere((p) => p.carClass == carClass);
-    return (pricing.minPrice + pricing.kmRate * distanceKm).round();
+  static CarClassPricing pricingFor(CarClass carClass) {
+    return _table.firstWhere((p) => p.carClass == carClass);
   }
 
-  static int driverEarningsCard(int ridePrice) => (ridePrice * (1 - cardCommissionRate - taxRate)).round();
+  static bool _isInMultiplierZone(double distanceKm) {
+    return distanceKm > demandMultiplierMinKm && distanceKm <= demandMultiplierMaxKm;
+  }
 
-  static int driverEarningsCash(int ridePrice) => ridePrice;
+  static double calculatePrice({
+    required CityType cityType,
+    required CarClass carClass,
+    required double distanceKm,
+    double durationMin = 0,
+    double demandMultiplier = 1.0,
+  }) {
+    final pricing = pricingFor(carClass);
+    final baseTotal = pricing.boarding + pricing.perKm * distanceKm + pricing.perMin * durationMin;
+
+    if (_isInMultiplierZone(distanceKm)) {
+      return baseTotal * demandMultiplier;
+    }
+    return baseTotal;
+  }
+
+  static PriceBreakdown calculateBreakdown({
+    required CarClass carClass,
+    required double distanceKm,
+    double durationMin = 0,
+    double demandMultiplier = 1.0,
+  }) {
+    final pricing = pricingFor(carClass);
+    final distanceCost = pricing.perKm * distanceKm;
+    final timeCost = pricing.perMin * durationMin;
+    final baseTotal = pricing.boarding + distanceCost + timeCost;
+
+    final multiplierApplied = _isInMultiplierZone(distanceKm);
+    final finalTotal = multiplierApplied ? baseTotal * demandMultiplier : baseTotal;
+
+    return PriceBreakdown(
+      boarding: pricing.boarding,
+      distanceCost: distanceCost,
+      timeCost: timeCost,
+      baseTotal: baseTotal,
+      demandMultiplier: multiplierApplied ? demandMultiplier : 1.0,
+      multiplierApplied: multiplierApplied,
+      finalTotal: finalTotal,
+    );
+  }
 }
