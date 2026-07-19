@@ -45,9 +45,9 @@ class CarClassBottomSheet extends StatelessWidget {
     required this.selectedPayment,
     required this.onPaymentChanged,
     required this.distanceKm,
+    this.durationMin,
     required this.onOrder,
     this.cityName,
-    this.durationMin,
   });
 
   @override
