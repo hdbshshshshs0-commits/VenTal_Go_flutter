@@ -291,9 +291,9 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
           selectedPayment: selectedPayment,
           onPaymentChanged: (p) => setState(() => selectedPayment = p),
           distanceKm: distanceKm,
+          durationMin: durationMin,
           onOrder: _handleOrder,
           onSwapAddresses: _swapAddresses,
-          durationMin: durationMin,
         );
     }
   }
