@@ -158,7 +158,7 @@ class CarClassBottomSheet extends StatelessWidget {
         return CarClassCard(
           pricing: pricing,
           distanceKm: distanceKm,
-          durationMin: durationMin,
+          durationMin: durationMin ?? 0,
           isSelected: pricing.carClass == selectedClass,
           onTap: () => onClassSelected(pricing.carClass),
         );
@@ -171,7 +171,8 @@ class CarClassBottomSheet extends StatelessWidget {
       cityType: cityType,
       carClass: selectedClass,
       distanceKm: distanceKm,
-    );
+      durationMin: durationMin ?? 0,
+    ).round();
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
