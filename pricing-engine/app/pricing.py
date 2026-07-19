@@ -7,6 +7,7 @@ class CarClass(str, Enum):
     COMFORT = "comfort"
     COMFORT_PLUS = "comfort_plus"
     BUSINESS = "business"
+    PREMIUM = "premium"
     ECO = "eco"
 
 
@@ -29,13 +30,15 @@ PRICING_TABLE: dict[CarClass, ClassPricing] = {
     CarClass.ECONOMY: ClassPricing(boarding=600, per_km=60, per_min=10),
     CarClass.COMFORT: ClassPricing(boarding=700, per_km=70, per_min=12),
     CarClass.COMFORT_PLUS: ClassPricing(boarding=800, per_km=80, per_min=15),
-    CarClass.BUSINESS: ClassPricing(boarding=1000, per_km=100, per_min=20),
+    CarClass.BUSINESS: ClassPricing(boarding=1200, per_km=130, per_min=25),
+    CarClass.PREMIUM: ClassPricing(boarding=1200, per_km=200, per_min=30),
     CarClass.ECO: ClassPricing(boarding=700, per_km=70, per_min=12),
 }
 
-# Порог, после которого начинает действовать множитель спроса.
-# До этого расстояния — всегда честная база, без наценок.
-DEMAND_MULTIPLIER_THRESHOLD_KM = 3.0
+# Множитель спроса применяется ТОЛЬКО в диапазоне (3 км; 15 км].
+# До 3 км и свыше 15 км — всегда честная база, без наценок.
+DEMAND_MULTIPLIER_MIN_KM = 3.0
+DEMAND_MULTIPLIER_MAX_KM = 15.0
 
 # ==== КОМИССИИ ПЛАТФОРМЫ ====
 CASH_LIKE_WITHHOLDING_RATE = 0.04  # налог самозанятого, транзитом в бюджет
@@ -48,6 +51,10 @@ def get_pricing(car_class: CarClass) -> ClassPricing:
     return PRICING_TABLE[car_class]
 
 
+def _is_in_multiplier_zone(distance_km: float) -> bool:
+    return DEMAND_MULTIPLIER_MIN_KM < distance_km <= DEMAND_MULTIPLIER_MAX_KM
+
+
 def calculate_price(
     car_class: CarClass,
     distance_km: float,
@@ -57,8 +64,9 @@ def calculate_price(
     """
     price = посадка + км*тариф_км + мин*тариф_мин
 
-    До DEMAND_MULTIPLIER_THRESHOLD_KM (3 км) множитель НЕ применяется.
-    Свыше порога — вся сумма умножается на demand_multiplier.
+    Множитель спроса действует ТОЛЬКО в диапазоне (3 км; 15 км].
+    До 3 км и свыше 15 км — всегда честная база, без наценок,
+    независимо от загрузки района.
     """
     if distance_km < 0 or duration_min < 0:
         raise ValueError("distance_km и duration_min не могут быть отрицательными")
@@ -68,10 +76,10 @@ def calculate_price(
     pricing = get_pricing(car_class)
     base_price = pricing.boarding + distance_km * pricing.per_km + duration_min * pricing.per_min
 
-    if distance_km <= DEMAND_MULTIPLIER_THRESHOLD_KM:
-        return round(base_price, 2)
+    if _is_in_multiplier_zone(distance_km):
+        return round(base_price * demand_multiplier, 2)
 
-    return round(base_price * demand_multiplier, 2)
+    return round(base_price, 2)
 
 
 def calculate_price_breakdown(
@@ -86,7 +94,7 @@ def calculate_price_breakdown(
     time_cost = round(duration_min * pricing.per_min, 2)
     base_total = round(boarding + distance_cost + time_cost, 2)
 
-    multiplier_applied = distance_km > DEMAND_MULTIPLIER_THRESHOLD_KM
+    multiplier_applied = _is_in_multiplier_zone(distance_km)
     final_total = round(base_total * demand_multiplier, 2) if multiplier_applied else base_total
 
     return {
