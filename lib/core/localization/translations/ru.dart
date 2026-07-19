@@ -21,6 +21,7 @@ const Map<String, String> ruTranslations = {
   'car_class_comfort': 'Комфорт',
   'car_class_comfort_plus': 'Комфорт+',
   'car_class_business': 'Бизнес',
+  'car_class_premium': 'Премиум',
   'car_class_eco': 'Эко',
   'payment_card': 'Карта',
   'payment_cash': 'Наличные',
