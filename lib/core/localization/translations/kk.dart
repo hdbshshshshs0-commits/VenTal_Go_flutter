@@ -120,7 +120,6 @@ const Map<String, String> kkTranslations = {
   'parcel_receiver_title': 'Алушы',
   'parcel_name_hint': 'Аты',
   'parcel_phone_hint': 'Телефон',
-  'parcel_address_hint': 'Мекенжай',
   'parcel_entrance_hint': 'Подъезд',
   'parcel_floor_hint': 'Қабат',
   'parcel_apartment_hint': 'Пәтер',
