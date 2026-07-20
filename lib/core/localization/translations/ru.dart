@@ -120,7 +120,6 @@ const Map<String, String> ruTranslations = {
   'parcel_receiver_title': 'Получатель',
   'parcel_name_hint': 'Имя',
   'parcel_phone_hint': 'Телефон',
-  'parcel_address_hint': 'Адрес',
   'parcel_entrance_hint': 'Подъезд',
   'parcel_floor_hint': 'Этаж',
   'parcel_apartment_hint': 'Квартира',
