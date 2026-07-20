@@ -120,7 +120,6 @@ const Map<String, String> enTranslations = {
   'parcel_receiver_title': 'Receiver',
   'parcel_name_hint': 'Name',
   'parcel_phone_hint': 'Phone',
-  'parcel_address_hint': 'Address',
   'parcel_entrance_hint': 'Entrance',
   'parcel_floor_hint': 'Floor',
   'parcel_apartment_hint': 'Apartment',
