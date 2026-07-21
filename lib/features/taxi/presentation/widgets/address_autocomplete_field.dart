@@ -22,6 +22,7 @@ class AddressAutocompleteField extends StatefulWidget {
     this.biasPosition,
     this.cityName,
     this.initialValue,
+    this.externalLoading = false,
   });
 
   @override
@@ -34,6 +35,7 @@ class _AddressAutocompleteFieldState extends State<AddressAutocompleteField> {
   List<AddressSuggestion> _suggestions = [];
   Timer? _debounce;
   bool _loading = false;
+  final bool externalLoading;
 
   @override
   void initState() {
@@ -111,7 +113,7 @@ class _AddressAutocompleteFieldState extends State<AddressAutocompleteField> {
                   decoration: InputDecoration(hintText: context.l10n.t(widget.hintKey), border: InputBorder.none, isDense: true),
                 ),
               ),
-              if (_loading) const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
+              if (_loading || widget.externalLoading) const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
             ],
           ),
         ),
