@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'package:vental_go/core/theme/app_colors.dart';
 import 'package:vental_go/core/localization/app_localizations.dart';
-import 'package:vental_go/core/widgets/logout_button.dart';
+import 'package:vental_go/features/auth/presentation/state/auth_controller.dart';
+import 'package:vental_go/features/auth/presentation/screens/login_screen.dart';
 import '../widgets/account_card.dart';
-import '../widgets/profile_section_card.dart';
+import '../widgets/profile_section_group.dart';
+import '../widgets/partner_promo_card.dart';
 import 'addresses_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -31,53 +34,73 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     super.dispose();
   }
 
-  void _handleSectionTap(String key) {
-    switch (key) {
-      case 'profile_section_addresses':
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const AddressesScreen()),
-        );
-        break;
-      default:
-        // TODO: остальные переходы (account, payment, history, settings, support)
-        break;
-    }
+  Future<void> _logout() async {
+    await context.read<AuthController>().logout();
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final sections = [
-      (icon: Icons.person_outline_rounded, key: 'profile_section_account'),
-      (icon: Icons.location_on_outlined, key: 'profile_section_addresses'),
-      (icon: Icons.payment_rounded, key: 'profile_section_payment'),
-      (icon: Icons.receipt_long_outlined, key: 'profile_section_history'),
-      (icon: Icons.settings_outlined, key: 'profile_section_settings'),
-      (icon: Icons.support_agent_rounded, key: 'profile_section_support'),
-    ];
-
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        foregroundColor: AppColors.textDark,
-        title: Text(context.l10n.t('profile_title')),
-      ),
-      body: FadeTransition(
-        opacity: _fade,
-        child: ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            const AccountCard(),
-            const SizedBox(height: 20),
-            ...sections.map((s) => ProfileSectionCard(
-                  icon: s.icon,
-                  label: context.l10n.t(s.key),
-                  onTap: () => _handleSectionTap(s.key),
-                )),
-            const SizedBox(height: 20),
-            const LogoutButton(),
-          ],
+      body: SafeArea(
+        child: FadeTransition(
+          opacity: _fade,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 110), // запас снизу под плавающий навбар
+            children: [
+              const AccountCard(),
+              const SizedBox(height: 20),
+              ProfileSectionGroup(items: [
+                ProfileSectionItem(
+                  icon: Icons.person_outline_rounded,
+                  label: context.l10n.t('profile_section_account'),
+                  onTap: () {}, // TODO: экран аккаунта
+                ),
+                ProfileSectionItem(
+                  icon: Icons.location_on_outlined,
+                  label: context.l10n.t('profile_section_addresses'),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const AddressesScreen()),
+                  ),
+                ),
+                ProfileSectionItem(
+                  icon: Icons.credit_card_outlined,
+                  label: context.l10n.t('profile_section_payment'),
+                  onTap: () {}, // TODO: экран способов оплаты
+                ),
+                ProfileSectionItem(
+                  icon: Icons.history_rounded,
+                  label: context.l10n.t('profile_section_history'),
+                  onTap: () {}, // TODO: история поездок
+                ),
+              ]),
+              const SizedBox(height: 16),
+              const PartnerPromoCard(),
+              const SizedBox(height: 16),
+              ProfileSectionGroup(items: [
+                ProfileSectionItem(
+                  icon: Icons.settings_outlined,
+                  label: context.l10n.t('profile_section_settings'),
+                  onTap: () {}, // TODO: настройки
+                ),
+                ProfileSectionItem(
+                  icon: Icons.support_agent_rounded,
+                  label: context.l10n.t('profile_section_support'),
+                  onTap: () {}, // TODO: поддержка
+                ),
+                ProfileSectionItem(
+                  icon: Icons.logout_rounded,
+                  label: context.l10n.t('profile_logout'),
+                  onTap: _logout,
+                ),
+              ]),
+            ],
+          ),
         ),
       ),
     );
