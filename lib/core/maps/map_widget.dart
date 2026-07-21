@@ -70,7 +70,7 @@ class _AppMapWidgetState extends State<AppMapWidget> {
       _routeLine = await ctrl.addLine(
         LineOptions(
           geometry: points,
-          lineColor: '#0B4429',
+          lineColor: '#D4AF37',
           lineWidth: 4.5,
           lineOpacity: 0.9,
           lineJoin: 'round',
