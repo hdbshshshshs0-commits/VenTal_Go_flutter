@@ -3,14 +3,17 @@ import 'package:vental_go/core/theme/app_colors.dart';
 import 'package:vental_go/core/localization/app_localizations.dart';
 import '../../data/models/service_tile_model.dart';
 import '../widgets/address_pill.dart';
-import '../widgets/main_services_row.dart';
-import '../widgets/related_services_row.dart';
+import '../widgets/main_service_trapezoid_button.dart';
+import '../widgets/services_preview_row.dart';
+import '../widgets/notification_bell_button.dart';
 import '../widgets/promo_carousel.dart';
 import '../widgets/floating_tab_bar.dart';
 import 'aitym_recommendations_screen.dart';
 import 'package:vental_go/features/taxi/presentation/screens/taxi_order_screen.dart';
 import 'package:vental_go/features/food/presentation/screens/restaurant_list_screen.dart';
 import 'package:vental_go/features/parcel/presentation/screens/parcel_screen.dart';
+import 'package:vental_go/features/services/presentation/screens/services_screen.dart';
+import 'package:vental_go/features/history/presentation/screens/history_screen.dart';
 import 'package:vental_go/features/profile/presentation/screens/profile_screen.dart';
 
 class MainHubScreen extends StatefulWidget {
@@ -23,20 +26,24 @@ class MainHubScreen extends StatefulWidget {
 class _MainHubScreenState extends State<MainHubScreen> {
   int _currentTabIndex = 0;
 
+  // Порядок по твоей формулировке: еда сверху-слева, такси сверху-справа,
+  // магазины снизу-слева, посылки снизу-справа.
   static const _mainTiles = [
     ServiceTileModel(id: 'food', labelKey: 'tile_food', iconPath: 'assets/images/services/food.png', sortOrder: 1),
+    ServiceTileModel(id: 'taxi', labelKey: 'tile_taxi', iconPath: 'assets/images/cars/economy.png', sortOrder: 2),
+    ServiceTileModel(id: 'shops', labelKey: 'chip_shops', iconPath: 'assets/images/icons/shops.png', sortOrder: 3),
+    ServiceTileModel(id: 'parcels', labelKey: 'tile_parcels', iconPath: 'assets/images/services/parcels.png', sortOrder: 4),
+  ];
+
+  // Маленькая полоска "Сервисы" — порядок как на макете (еда/такси/магазины/посылки).
+  static const _servicesPreviewTiles = [
+    ServiceTileModel(id: 'food', labelKey: 'tile_food', iconPath: 'assets/images/services/food.png', sortOrder: 1),
     ServiceTileModel(id: 'taxi', labelKey: 'tile_taxi', iconPath: 'assets/images/services/taxi.png', sortOrder: 2),
-    ServiceTileModel(id: 'parcels', labelKey: 'tile_parcels', iconPath: 'assets/images/services/parcels.png', sortOrder: 3),
+    ServiceTileModel(id: 'shops', labelKey: 'chip_shops', iconPath: 'assets/images/icons/shops.png', sortOrder: 3),
+    ServiceTileModel(id: 'parcels', labelKey: 'tile_parcels', iconPath: 'assets/images/services/parcels.png', sortOrder: 4),
   ];
 
-  static const _relatedTiles = [
-    ServiceTileModel(id: 'shops', labelKey: 'chip_shops', iconPath: 'assets/images/icons/shops.png'),
-    ServiceTileModel(id: 'veggies', labelKey: 'chip_veggies', iconPath: 'assets/images/icons/veggies.png'),
-    ServiceTileModel(id: 'supplements', labelKey: 'chip_supplements', iconPath: 'assets/images/icons/supplements.png'),
-    ServiceTileModel(id: 'pharmacy', labelKey: 'chip_pharmacy', iconPath: 'assets/images/icons/pharmacy.png'),
-  ];
-
-  void _handleMainTileTap(ServiceTileModel tile) {
+  void _handleTileTap(ServiceTileModel tile) {
     switch (tile.id) {
       case 'taxi':
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TaxiOrderScreen()));
@@ -47,19 +54,42 @@ class _MainHubScreenState extends State<MainHubScreen> {
       case 'parcels':
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ParcelScreen()));
         break;
+      case 'shops':
+        // TODO: экран магазинов ещё не реализован
+        break;
     }
   }
 
   Widget _hubContent() {
     return SafeArea(
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 110),
         children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('VenTal', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 30, color: AppColors.textDark)),
+              NotificationBellButton(onTap: () {}), // TODO: экран уведомлений
+            ],
+          ),
+          const SizedBox(height: 16),
           AddressPill(address: context.l10n.t('hub_default_address')),
-          const SizedBox(height: 20),
-          MainServicesRow(tiles: _mainTiles, onTap: _handleMainTileTap),
-          const SizedBox(height: 20),
-          RelatedServicesRow(tiles: _relatedTiles, onTap: (_) {}),
+          const SizedBox(height: 24),
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            childAspectRatio: 1.35,
+            children: _mainTiles.map((tile) {
+              return MainServiceTrapezoidButton(
+                iconAsset: tile.iconPath,
+                label: context.l10n.t(tile.labelKey),
+                onTap: () => _handleTileTap(tile),
+              );
+            }).toList(),
+          ),
           const SizedBox(height: 24),
           PromoCarousel(
             items: [
@@ -74,7 +104,12 @@ class _MainHubScreenState extends State<MainHubScreen> {
               const PromoCarouselItem(imagePath: 'assets/images/banners/promo_2.png'),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
+          ServicesPreviewRow(
+            tiles: _servicesPreviewTiles,
+            onTap: _handleTileTap,
+            onSeeAll: () => setState(() => _currentTabIndex = 1),
+          ),
         ],
       ),
     );
@@ -90,6 +125,8 @@ class _MainHubScreenState extends State<MainHubScreen> {
             index: _currentTabIndex,
             children: [
               _hubContent(),
+              const ServicesScreen(),
+              const HistoryScreen(),
               const ProfileScreen(),
             ],
           ),
