@@ -48,7 +48,7 @@ class ServicesPreviewRow extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: AppColors.divider),
                       ),
-                      child: Image.asset(tile.iconPath, width: 26, height: 26, color: AppColors.primary),
+                      child: Image.asset(tile.iconPath, width: 26, height: 26),
                     ),
                     const SizedBox(height: 6),
                     Text(context.l10n.t(tile.labelKey), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textDark)),

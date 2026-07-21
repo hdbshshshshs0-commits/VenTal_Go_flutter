@@ -31,7 +31,7 @@ class MainServiceTrapezoidButton extends StatelessWidget {
                 border: Border.all(color: AppColors.primary.withValues(alpha: 0.35), width: 1.4),
               ),
               child: Center(
-                child: Image.asset(iconAsset, width: 34, height: 34, fit: BoxFit.contain, color: AppColors.primary),
+                child: Image.asset(iconAsset, width: 34, height: 34, fit: BoxFit.contain),
               ),
             ),
           ),
