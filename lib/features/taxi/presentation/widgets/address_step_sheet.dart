@@ -18,6 +18,7 @@ class AddressStepSheet extends StatelessWidget {
   final bool canConfirm;
   final VoidCallback onConfirm;
   final void Function(String address, LatLng coordinates) onAddressSelected;
+  final bool isAddressLoading;
 
   const AddressStepSheet({
     super.key,
@@ -33,6 +34,7 @@ class AddressStepSheet extends StatelessWidget {
     this.showLocateButton = false,
     this.isLocating = false,
     this.onLocateTap,
+    this.isAddressLoading = false,
   });
 
   @override
@@ -63,6 +65,7 @@ class AddressStepSheet extends StatelessWidget {
                   biasPosition: biasPosition,
                   cityName: cityName,
                   initialValue: initialAddress,
+                  externalLoading: isAddressLoading,
                   onAddressSelected: onAddressSelected,
                 ),
               ),
