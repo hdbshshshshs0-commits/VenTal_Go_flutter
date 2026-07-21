@@ -1,32 +1,33 @@
 import 'package:flutter/material.dart';
 
-/// Приближение формы "флажок/трапеция, сужается к правому краю",
-/// со скруглёнными углами. Не пиксель-в-пиксель со SVG, но близко по силуэту.
 class TrapezoidClipper extends CustomClipper<Path> {
   final double cornerRadius;
+  final double cutWidth;
 
-  const TrapezoidClipper({this.cornerRadius = 18});
+  const TrapezoidClipper({this.cornerRadius = 16, this.cutWidth = 18});
 
   @override
   Path getClip(Size size) {
     final w = size.width;
     final h = size.height;
-    final inset = w * 0.14;
     final r = cornerRadius;
+    final cut = cutWidth;
 
-    final path = Path();
-    path.moveTo(r, 0);
-    path.lineTo(w - inset - r, 0);
-    path.quadraticBezierTo(w - inset, 0, w - inset + r * 0.6, r);
-    path.lineTo(w - r * 0.5, h / 2 - r);
-    path.quadraticBezierTo(w, h / 2, w - r * 0.5, h / 2 + r);
-    path.lineTo(w - inset + r * 0.6, h - r);
-    path.quadraticBezierTo(w - inset, h, w - inset - r, h);
-    path.lineTo(r, h);
-    path.quadraticBezierTo(0, h, 0, h - r);
-    path.lineTo(0, r);
-    path.quadraticBezierTo(0, 0, r, 0);
+    final rrect = RRect.fromRectAndCorners(
+      Rect.fromLTRB(0, 0, w - cut, h),
+      topLeft: Radius.circular(r),
+      bottomLeft: Radius.circular(r),
+      topRight: Radius.circular(r * 0.6),
+      bottomRight: Radius.circular(r * 0.6),
+    );
+
+    final path = Path()..addRRect(rrect);
+    // Треугольный "хвост" справа, сходящийся к середине высоты.
+    path.moveTo(w - cut, h * 0.12);
+    path.lineTo(w, h / 2);
+    path.lineTo(w - cut, h * 0.88);
     path.close();
+
     return path;
   }
 
