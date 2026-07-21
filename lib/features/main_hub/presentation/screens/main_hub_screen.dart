@@ -71,7 +71,7 @@ class _MainHubScreenState extends State<MainHubScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('VenTal', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 30, color: AppColors.textDark)),
+              const Text('VenTal Superapp', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 30, color: AppColors.textDark)),
               NotificationBellButton(onTap: () {}), // TODO: экран уведомлений
             ],
           ),
