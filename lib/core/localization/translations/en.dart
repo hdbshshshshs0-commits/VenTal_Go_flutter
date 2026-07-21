@@ -195,6 +195,7 @@ const Map<String, String> enTranslations = {
 'tab_services': 'Services',
 'main_hub_services_title': 'Services',
 'main_hub_see_all': 'See all',
+"services_title": "Services"
 'history_active_tab': 'Active',
 'history_past_tab': 'History',
 'history_active_title': 'Active',
