@@ -11,7 +11,7 @@ import '../widgets/floating_tab_bar.dart';
 import 'aitym_recommendations_screen.dart';
 import 'package:vental_go/features/taxi/presentation/screens/taxi_order_screen.dart';
 import 'package:vental_go/features/food/presentation/screens/restaurant_list_screen.dart';
-import 'package:vental_go/features/parcel/presentation/screens/parcel_screen.dart';
+import 'package:vental_go/features/parcels/presentation/screens/parcel_screen.dart';
 import 'package:vental_go/features/services/presentation/screens/services_screen.dart';
 import 'package:vental_go/features/history/presentation/screens/history_screen.dart';
 import 'package:vental_go/features/profile/presentation/screens/profile_screen.dart';
