@@ -37,10 +37,10 @@ class _MainHubScreenState extends State<MainHubScreen> {
 
   // Маленькая полоска "Сервисы" — порядок как на макете (еда/такси/магазины/посылки).
   static const _servicesPreviewTiles = [
-    ServiceTileModel(id: 'food', labelKey: 'tile_food', iconPath: 'assets/images/services/food.png', sortOrder: 1),
-    ServiceTileModel(id: 'taxi', labelKey: 'tile_taxi', iconPath: 'assets/images/services/taxi.png', sortOrder: 2),
-    ServiceTileModel(id: 'shops', labelKey: 'chip_shops', iconPath: 'assets/images/icons/shops.png', sortOrder: 3),
-    ServiceTileModel(id: 'parcels', labelKey: 'tile_parcels', iconPath: 'assets/images/services/parcels.png', sortOrder: 4),
+    ServiceTileModel(id: 'shops', labelKey: 'chip_shops', iconPath: 'assets/images/icons/shops.png', sortOrder: 1),
+    ServiceTileModel(id: 'veggies', labelKey: 'chip_veggies', iconPath: 'assets/images/icons/veggies.png', sortOrder: 2),
+    ServiceTileModel(id: 'supplements', labelKey: 'chip_supplements', iconPath: 'assets/images/icons/supplements.png', sortOrder: 3),
+    ServiceTileModel(id: 'pharmacy', labelKey: 'chip_pharmacy', iconPath: 'assets/images/icons/pharmacy.png', sortOrder: 4),
   ];
 
   void _handleTileTap(ServiceTileModel tile) {
@@ -55,6 +55,9 @@ class _MainHubScreenState extends State<MainHubScreen> {
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ParcelScreen()));
         break;
       case 'shops':
+      case 'veggies':
+      case 'supplements':
+      case 'pharmacy':
         // TODO: экран магазинов ещё не реализован
         break;
     }
