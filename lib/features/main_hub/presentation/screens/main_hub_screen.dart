@@ -6,12 +6,11 @@ import '../widgets/address_pill.dart';
 import '../widgets/main_services_row.dart';
 import '../widgets/related_services_row.dart';
 import '../widgets/promo_carousel.dart';
-import '../widgets/floating_search_bar.dart';
 import '../widgets/floating_tab_bar.dart';
 import 'aitym_recommendations_screen.dart';
 import 'package:vental_go/features/taxi/presentation/screens/taxi_order_screen.dart';
 import 'package:vental_go/features/food/presentation/screens/restaurant_list_screen.dart';
-import 'package:vental_go/features/parcels/presentation/screens/parcel_order_screen.dart';
+import 'package:vental_go/features/parcel/presentation/screens/parcel_screen.dart';
 import 'package:vental_go/features/profile/presentation/screens/profile_screen.dart';
 
 class MainHubScreen extends StatefulWidget {
@@ -46,7 +45,7 @@ class _MainHubScreenState extends State<MainHubScreen> {
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => const RestaurantListScreen()));
         break;
       case 'parcels':
-        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ParcelOrderScreen()));
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ParcelScreen()));
         break;
     }
   }
@@ -94,7 +93,6 @@ class _MainHubScreenState extends State<MainHubScreen> {
               const ProfileScreen(),
             ],
           ),
-          if (_currentTabIndex == 0) const FloatingSearchBar(),
           FloatingTabBar(
             currentIndex: _currentTabIndex,
             onTap: (i) => setState(() => _currentTabIndex = i),
