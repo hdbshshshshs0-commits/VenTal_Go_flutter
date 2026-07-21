@@ -195,6 +195,7 @@ const Map<String, String> kkTranslations = {
 'tab_services': 'Қызметтер',
 'main_hub_services_title': 'Қызметтер',
 'main_hub_see_all': 'Барлығы',
+"services_title": "Қызметтер"
 'history_active_tab': 'Белсенді',
 'history_past_tab': 'Тарих',
 'history_active_title': 'Белсенді',
