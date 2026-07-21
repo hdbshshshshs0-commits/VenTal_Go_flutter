@@ -11,9 +11,9 @@ class FloatingTabBar extends StatelessWidget {
 
   static const _tabs = [
     (icon: Icons.home_rounded, labelKey: 'tab_home'),
+    (icon: Icons.grid_view_rounded, labelKey: 'tab_services'),
+    (icon: Icons.history_rounded, labelKey: 'tab_history'),
     (icon: Icons.person_rounded, labelKey: 'tab_profile'),
-    // TODO: добавить вкладку истории одной строкой, когда будет готов экран:
-    // (icon: Icons.history_rounded, labelKey: 'tab_history'),
   ];
 
   @override
@@ -59,20 +59,12 @@ class FloatingTabBar extends StatelessWidget {
                 color: isActive ? AppColors.primary.withValues(alpha: 0.12) : Colors.transparent,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                tab.icon,
-                color: isActive ? AppColors.primary : AppColors.textHint,
-                size: 22,
-              ),
+              child: Icon(tab.icon, color: isActive ? AppColors.primary : AppColors.textHint, size: 22),
             ),
             const SizedBox(height: 2),
             Text(
               context.l10n.t(tab.labelKey),
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                color: isActive ? AppColors.primary : AppColors.textHint,
-              ),
+              style: TextStyle(fontSize: 10, fontWeight: isActive ? FontWeight.w700 : FontWeight.w500, color: isActive ? AppColors.primary : AppColors.textHint),
             ),
           ],
         ),
