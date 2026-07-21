@@ -12,6 +12,7 @@ class AddressAutocompleteField extends StatefulWidget {
   final LatLng? biasPosition;
   final String? cityName;
   final String? initialValue;
+  final bool externalLoading;
   final void Function(String address, LatLng coordinates) onAddressSelected;
 
   const AddressAutocompleteField({
@@ -35,7 +36,6 @@ class _AddressAutocompleteFieldState extends State<AddressAutocompleteField> {
   List<AddressSuggestion> _suggestions = [];
   Timer? _debounce;
   bool _loading = false;
-  final bool externalLoading;
 
   @override
   void initState() {

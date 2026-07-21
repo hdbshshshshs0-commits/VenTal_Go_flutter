@@ -34,6 +34,8 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
   LatLng? _fromLatLng;
   String? _toAddress;
   LatLng? _toLatLng;
+  bool _resolvingFromAddress = false;
+  bool _resolvingToAddress = false;
 
   CarClass selectedClass = CarClass.economy;
   PaymentMethod selectedPayment = PaymentMethod.cash;
@@ -126,9 +128,11 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
     setState(() {
       if (_step == _OrderStep.pickingFrom) {
         _fromLatLng = position;
+        _resolvingFromAddress = address == null;
         if (address != null) _fromAddress = address;
       } else if (_step == _OrderStep.pickingTo) {
         _toLatLng = position;
+        _resolvingToAddress = address == null;
         if (address != null) _toAddress = address;
       }
     });
@@ -227,6 +231,7 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
             biasPosition: _userPosition ?? _fromLatLng,
             cityName: cityName,
             initialAddress: _fromAddress,
+            isAddressLoading: _resolvingFromAddress,
             showLocateButton: true,
             isLocating: _locatingUser,
             onLocateTap: _handleLocateFrom,
@@ -252,6 +257,7 @@ class _TaxiOrderScreenState extends State<TaxiOrderScreen> {
             biasPosition: _fromLatLng,
             cityName: cityName,
             initialAddress: _toAddress,
+            isAddressLoading: _resolvingToAddress,
             canConfirm: _toLatLng != null,
             onConfirm: _confirmTo,
             onAddressSelected: (address, latLng) {
