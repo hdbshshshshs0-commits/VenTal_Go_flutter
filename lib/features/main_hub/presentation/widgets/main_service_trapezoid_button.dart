@@ -7,14 +7,12 @@ class MainServiceTrapezoidButton extends StatelessWidget {
   final String iconAsset;
   final String label;
   final VoidCallback onTap;
-  final Color accentColor;
 
   const MainServiceTrapezoidButton({
     super.key,
     required this.iconAsset,
     required this.label,
     required this.onTap,
-    this.accentColor = AppColors.primary,
   });
 
   @override
@@ -27,18 +25,18 @@ class MainServiceTrapezoidButton extends StatelessWidget {
             clipper: const TrapezoidClipper(),
             child: Container(
               width: double.infinity,
-              height: 130,
+              height: 96,
               decoration: BoxDecoration(
                 color: Colors.white,
-                border: Border.all(color: accentColor.withValues(alpha: 0.35), width: 1.4),
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.35), width: 1.4),
               ),
               child: Center(
-                child: Image.asset(iconAsset, width: 44, height: 44, fit: BoxFit.contain, color: accentColor),
+                child: Image.asset(iconAsset, width: 34, height: 34, fit: BoxFit.contain, color: AppColors.primary),
               ),
             ),
           ),
-          const SizedBox(height: 8),
-          Text(label, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.textDark)),
+          const SizedBox(height: 6),
+          Text(label, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.textDark)),
         ],
       ),
     );
