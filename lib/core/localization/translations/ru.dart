@@ -195,6 +195,7 @@ const Map<String, String> ruTranslations = {
   'tab_services': 'Сервисы',
 'main_hub_services_title': 'Сервисы',
 'main_hub_see_all': 'Все',
+  'services_title': 'Сервисы',
   'history_active_tab': 'Активные',
 'history_past_tab': 'История',
 'history_active_title': 'Активные',
