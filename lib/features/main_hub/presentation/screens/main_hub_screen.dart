@@ -72,16 +72,16 @@ class _MainHubScreenState extends State<MainHubScreen> {
               NotificationBellButton(onTap: () {}), // TODO: экран уведомлений
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           AddressPill(address: context.l10n.t('hub_default_address')),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           GridView.count(
             crossAxisCount: 2,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
-            childAspectRatio: 1.35,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 1.7,
             children: _mainTiles.map((tile) {
               return MainServiceTrapezoidButton(
                 iconAsset: tile.iconPath,
