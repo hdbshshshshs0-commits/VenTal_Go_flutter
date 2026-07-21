@@ -147,8 +147,7 @@ class _AppMapWidgetState extends State<AppMapWidget> {
           },
           onCameraIdle: _handleCameraIdle,
         ),
-        if (widget.showCenterPin)
-          CenterPin(isLoading: _resolvingCenterAddress, address: _centerAddress),
+        if (widget.showCenterPin) const CenterPin(),
         if (!_styleLoaded)
           Container(
             color: AppColors.divider,
