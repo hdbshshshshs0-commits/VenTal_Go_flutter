@@ -29,9 +29,8 @@ extension UserRoleStyle on UserRole {
       case UserRole.courier:
       case UserRole.driver:
       case UserRole.restaurant:
-        // TODO: свои градиенты для courier/driver/restaurant, пока золотой как у клиента
         return const LinearGradient(
-          colors: [Color(0xFFF6D06B), Color(0xFFE0A730)],
+          colors: [Color(0xFFE8C868), Color(0xFFD4AF37)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
