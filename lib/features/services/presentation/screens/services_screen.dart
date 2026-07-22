@@ -4,7 +4,7 @@ import 'package:vental_go/core/theme/app_colors.dart';
 import 'package:vental_go/core/localization/app_localizations.dart';
 import 'package:vental_go/features/taxi/presentation/screens/taxi_order_screen.dart';
 import 'package:vental_go/features/food/presentation/screens/restaurant_list_screen.dart';
-import 'package:vental_go/features/parcel/presentation/screens/parcel_screen.dart';
+import 'package:vental_go/features/parcels/presentation/screens/parcel_screen.dart';
 import '../../data/models/service_category_model.dart';
 
 class ServicesScreen extends StatelessWidget {
