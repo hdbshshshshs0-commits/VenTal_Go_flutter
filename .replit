@@ -1,4 +1,4 @@
-modules = ["swift-5.8", "go-1.25"]
+modules = ["go-1.21", "python-3.12"]
 [nix]
 channel = "stable-25_05"
 
