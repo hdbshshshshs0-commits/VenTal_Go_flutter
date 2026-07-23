@@ -1,4 +1,4 @@
-modules = ["go-1.21", "python-3.12"]
+modules = ["go-1.23", "python-3.12"]
 [nix]
 channel = "stable-25_05"
 
