@@ -253,13 +253,18 @@ class _CategoryTile extends StatelessWidget {
                 boxShadow: const [BoxShadow(color: Color(0x0F000000), blurRadius: 8, offset: Offset(0, 2))],
               ),
               padding: const EdgeInsets.all(10),
-              child: Image.asset(
-                cat.iconPath,
-                fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => Icon(
-                  Icons.apps_rounded,
-                  color: AppColors.primary.withValues(alpha: 0.6),
-                  size: 28,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset(
+                  cat.iconPath,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                  errorBuilder: (_, __, ___) => Icon(
+                    Icons.apps_rounded,
+                    color: AppColors.primary.withValues(alpha: 0.6),
+                    size: 28,
+                  ),
                 ),
               ),
             ),

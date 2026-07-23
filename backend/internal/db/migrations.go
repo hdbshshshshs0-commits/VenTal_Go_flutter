@@ -60,6 +60,11 @@ func Migrate(db *sqlx.DB) error {
 			updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
 		)`,
 
+		// ─── Auth columns added post-initial schema ─────────────────────────
+		`ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT`,
+		`ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id VARCHAR(100)`,
+		`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id) WHERE google_id IS NOT NULL`,
+
 		// ─── OTP codes ───────────────────────────────────────────────────────
 		`CREATE TABLE IF NOT EXISTS otp_codes (
 			id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

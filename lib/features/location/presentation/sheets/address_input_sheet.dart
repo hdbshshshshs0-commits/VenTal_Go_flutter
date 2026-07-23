@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:vental_go/core/theme/app_colors.dart';
 import '../state/location_controller.dart';
 import '../screens/address_map_screen.dart';
+import '../../data/models/location_country_data.dart';
 
 /// Bottom sheet for entering/confirming delivery address.
 /// Has a text field + map button. Tapping map opens [AddressMapScreen].
@@ -43,11 +44,19 @@ class _AddressInputSheetState extends State<_AddressInputSheet> {
 
   Future<void> _openMap() async {
     final loc = context.read<LocationController>();
-    if (loc.locationData == null) return;
+    // Use saved location or fall back to a default city center (Астана)
+    final data = loc.locationData ??
+        const LocationData(
+          countryCode: 'KZ',
+          countryName: 'Казахстан',
+          cityName: 'Астана',
+          cityLat: 51.1605,
+          cityLng: 71.4704,
+        );
 
     final result = await Navigator.of(context).push<(String, double, double)>(
       MaterialPageRoute(
-        builder: (_) => AddressMapScreen(locationData: loc.locationData!),
+        builder: (_) => AddressMapScreen(locationData: data),
         fullscreenDialog: true,
       ),
     );

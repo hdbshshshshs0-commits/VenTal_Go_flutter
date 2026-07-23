@@ -42,6 +42,9 @@ func NewRouter(db *sqlx.DB, cfg *config.Config) *gin.Engine {
 	{
 		public.POST("/auth/send-otp",    auth.SendOTP)
 		public.POST("/auth/verify-otp",  auth.VerifyOTP)
+		public.POST("/auth/register",    auth.Register)
+		public.POST("/auth/login",       auth.Login)
+		public.POST("/auth/google",      auth.LoginGoogle)
 	}
 
 	// ── Authenticated routes ──────────────────────────────────────────────────
