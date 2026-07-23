@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:vental_go/core/theme/app_colors.dart';
 import 'package:vental_go/core/localization/app_localizations.dart';
-import '../../data/models/service_tile_model.dart';
-import '../widgets/address_pill.dart';
-import '../widgets/main_service_trapezoid_button.dart';
-import '../widgets/services_preview_row.dart';
-import '../widgets/notification_bell_button.dart';
-import '../widgets/promo_carousel.dart';
+import 'package:vental_go/features/location/presentation/state/location_controller.dart';
+import 'package:vental_go/features/location/presentation/sheets/country_city_picker_sheet.dart';
+import 'package:vental_go/features/location/presentation/sheets/address_input_sheet.dart';
 import '../widgets/floating_tab_bar.dart';
-import 'aitym_recommendations_screen.dart';
+import '../widgets/home_banner.dart';
+import '../widgets/notification_bell_button.dart';
 import 'package:vental_go/features/taxi/presentation/screens/taxi_order_screen.dart';
 import 'package:vental_go/features/food/presentation/screens/restaurant_list_screen.dart';
 import 'package:vental_go/features/parcels/presentation/screens/parcel_screen.dart';
 import 'package:vental_go/features/services/presentation/screens/services_screen.dart';
 import 'package:vental_go/features/history/presentation/screens/history_screen.dart';
 import 'package:vental_go/features/profile/presentation/screens/profile_screen.dart';
+import 'package:vental_go/features/notifications/presentation/screens/notifications_screen.dart';
 
 class MainHubScreen extends StatefulWidget {
   const MainHubScreen({super.key});
@@ -26,25 +26,18 @@ class MainHubScreen extends StatefulWidget {
 class _MainHubScreenState extends State<MainHubScreen> {
   int _currentTabIndex = 0;
 
-  // Порядок по твоей формулировке: еда сверху-слева, такси сверху-справа,
-  // магазины снизу-слева, посылки снизу-справа.
-  static const _mainTiles = [
-    ServiceTileModel(id: 'food', labelKey: 'tile_food', iconPath: 'assets/images/services/food.png', sortOrder: 1),
-    ServiceTileModel(id: 'taxi', labelKey: 'tile_taxi', iconPath: 'assets/images/cars/economy.png', sortOrder: 2),
-    ServiceTileModel(id: 'shops', labelKey: 'chip_shops', iconPath: 'assets/images/icons/shops.png', sortOrder: 3),
-    ServiceTileModel(id: 'parcels', labelKey: 'tile_parcels', iconPath: 'assets/images/services/parcels.png', sortOrder: 4),
+  static const _categories = [
+    _Category(id: 'food', labelKey: 'cat_food', iconPath: 'assets/images/services/food.png'),
+    _Category(id: 'taxi', labelKey: 'cat_taxi', iconPath: 'assets/images/services/taxi.png'),
+    _Category(id: 'parcels', labelKey: 'cat_parcel', iconPath: 'assets/images/services/parcels.png'),
+    _Category(id: 'shops', labelKey: 'cat_shops', iconPath: 'assets/images/icons/shops.png'),
+    _Category(id: 'veggies', labelKey: 'cat_veggies', iconPath: 'assets/images/icons/veggies.png'),
+    _Category(id: 'supplements', labelKey: 'cat_supplements', iconPath: 'assets/images/icons/supplements.png'),
+    _Category(id: 'pharmacy', labelKey: 'cat_pharmacy', iconPath: 'assets/images/icons/pharmacy.png'),
   ];
 
-  // Маленькая полоска "Сервисы" — порядок как на макете (еда/такси/магазины/посылки).
-  static const _servicesPreviewTiles = [
-    ServiceTileModel(id: 'shops', labelKey: 'chip_shops', iconPath: 'assets/images/icons/shops.png', sortOrder: 1),
-    ServiceTileModel(id: 'veggies', labelKey: 'chip_veggies', iconPath: 'assets/images/icons/veggies.png', sortOrder: 2),
-    ServiceTileModel(id: 'supplements', labelKey: 'chip_supplements', iconPath: 'assets/images/icons/supplements.png', sortOrder: 3),
-    ServiceTileModel(id: 'pharmacy', labelKey: 'chip_pharmacy', iconPath: 'assets/images/icons/pharmacy.png', sortOrder: 4),
-  ];
-
-  void _handleTileTap(ServiceTileModel tile) {
-    switch (tile.id) {
+  void _handleCategoryTap(_Category cat) {
+    switch (cat.id) {
       case 'taxi':
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TaxiOrderScreen()));
         break;
@@ -54,65 +47,81 @@ class _MainHubScreenState extends State<MainHubScreen> {
       case 'parcels':
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ParcelScreen()));
         break;
-      case 'shops':
-      case 'veggies':
-      case 'supplements':
-      case 'pharmacy':
-        // TODO: экран магазинов ещё не реализован
-        break;
+      default:
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Скоро будет доступно'), duration: Duration(seconds: 2)),
+        );
+    }
+  }
+
+  Future<void> _handleLocationTap(LocationController loc) async {
+    if (!loc.citySetupDone) {
+      // First time: pick country + city
+      final result = await showCountryCityPicker(context);
+      if (result != null && mounted) {
+        await loc.setCity(result.country, result.city);
+        // Then show address input
+        if (mounted) await showAddressInputSheet(context);
+      }
+    } else {
+      // City already set — only address can be changed
+      await showAddressInputSheet(context);
     }
   }
 
   Widget _hubContent() {
+    final loc = context.watch<LocationController>();
+
     return SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 110),
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text('VenTal Superapp', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 30, color: AppColors.textDark)),
-              NotificationBellButton(onTap: () {}), // TODO: экран уведомлений
-            ],
-          ),
-          const SizedBox(height: 10),
-          AddressPill(address: context.l10n.t('hub_default_address')),
-          const SizedBox(height: 16),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: 1.7,
-            children: _mainTiles.map((tile) {
-              return MainServiceTrapezoidButton(
-                iconAsset: tile.iconPath,
-                label: context.l10n.t(tile.labelKey),
-                onTap: () => _handleTileTap(tile),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 24),
-          PromoCarousel(
-            items: [
-              PromoCarouselItem(
-                imagePath: 'assets/images/banners/collab_aitym.png',
-                titleKey: 'banner_collab',
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const AitymRecommendationsScreen()),
+      child: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              child: _Header(
+                loc: loc,
+                onLocationTap: () => _handleLocationTap(loc),
+                onBellTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const NotificationsScreen()),
                 ),
               ),
-              const PromoCarouselItem(imagePath: 'assets/images/banners/promo_1.png'),
-              const PromoCarouselItem(imagePath: 'assets/images/banners/promo_2.png'),
-            ],
+            ),
           ),
-          const SizedBox(height: 24),
-          ServicesPreviewRow(
-            tiles: _servicesPreviewTiles,
-            onTap: _handleTileTap,
-            onSeeAll: () => setState(() => _currentTabIndex = 1),
+
+          // Categories grid
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+            sliver: SliverGrid(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                mainAxisSpacing: 14,
+                crossAxisSpacing: 10,
+                childAspectRatio: 0.82,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final cat = _categories[index];
+                  return _CategoryTile(
+                    cat: cat,
+                    label: context.l10n.t(cat.labelKey),
+                    onTap: () => _handleCategoryTap(cat),
+                  );
+                },
+                childCount: _categories.length,
+              ),
+            ),
           ),
+
+          // Banner
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+              child: HomeBanner(onTap: () {}),
+            ),
+          ),
+
+          // Bottom padding for nav bar
+          const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
     );
@@ -141,4 +150,140 @@ class _MainHubScreenState extends State<MainHubScreen> {
       ),
     );
   }
+}
+
+// ─── Header widget ────────────────────────────────────────────────────────────
+
+class _Header extends StatelessWidget {
+  final LocationController loc;
+  final VoidCallback onLocationTap;
+  final VoidCallback onBellTap;
+
+  const _Header({required this.loc, required this.onLocationTap, required this.onBellTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // Location pill
+        Expanded(
+          child: GestureDetector(
+            onTap: onLocationTap,
+            behavior: HitTestBehavior.opaque,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(top: 2),
+                  child: Icon(Icons.location_on_rounded, color: AppColors.primary, size: 18),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Текущая локация',
+                        style: TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 2),
+                      if (loc.isSet)
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                loc.savedAddress.isNotEmpty
+                                    ? loc.savedAddress
+                                    : loc.headerLabel,
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textDark,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textDark, size: 18),
+                          ],
+                        )
+                      else
+                        const Text(
+                          'Выберите локацию',
+                          style: TextStyle(fontSize: 14, color: AppColors.textHint),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        NotificationBellButton(onTap: onBellTap),
+      ],
+    );
+  }
+}
+
+// ─── Category tile ────────────────────────────────────────────────────────────
+
+class _CategoryTile extends StatelessWidget {
+  final _Category cat;
+  final String label;
+  final VoidCallback onTap;
+
+  const _CategoryTile({required this.cat, required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Expanded(
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: const [BoxShadow(color: Color(0x0F000000), blurRadius: 8, offset: Offset(0, 2))],
+              ),
+              padding: const EdgeInsets.all(10),
+              child: Image.asset(
+                cat.iconPath,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => Icon(
+                  Icons.apps_rounded,
+                  color: AppColors.primary.withValues(alpha: 0.6),
+                  size: 28,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textDark),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Model ────────────────────────────────────────────────────────────────────
+
+class _Category {
+  final String id;
+  final String labelKey;
+  final String iconPath;
+
+  const _Category({required this.id, required this.labelKey, required this.iconPath});
 }

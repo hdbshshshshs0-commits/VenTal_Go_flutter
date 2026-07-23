@@ -21,7 +21,7 @@ extension UserRoleStyle on UserRole {
     switch (this) {
       case UserRole.admin:
         return const LinearGradient(
-          colors: [Color(0xFF7EC8E3), Color(0xFF0B4429)],
+          colors: [Color(0xFF038A5A), Color(0xFF025C3D)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
@@ -30,7 +30,7 @@ extension UserRoleStyle on UserRole {
       case UserRole.driver:
       case UserRole.restaurant:
         return const LinearGradient(
-          colors: [Color(0xFFE8C868), Color(0xFFD4AF37)],
+          colors: [Color(0xFF05C283), Color(0xFF038A5A)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
