@@ -93,20 +93,6 @@ class _AddressMapScreenState extends State<AddressMapScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // ── Map ──────────────────────────────────────────────────────────
-          MapLibreMap(
-            styleString: 'assets/map/style.json',
-            initialCameraPosition: CameraPosition(
-              target: LatLng(_currentLat, _currentLng),
-              zoom: 15,
-            ),
-            onMapCreated: _onMapCreated,
-            onCameraMove: _onCameraMove,
-            onCameraIdle: _onCameraIdle,
-            trackCameraPosition: true,
-            myLocationEnabled: true,
-            myLocationTrackingMode: MyLocationTrackingMode.none,
-          ),
 
           // ── Top bar ───────────────────────────────────────────────────────
           SafeArea(
