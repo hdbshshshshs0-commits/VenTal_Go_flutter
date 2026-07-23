@@ -18,12 +18,13 @@ class AddressMapScreen extends StatefulWidget {
 }
 
 class _AddressMapScreenState extends State<AddressMapScreen> {
-  MaplibreMapController? _mapController;
+  MapLibreMapController? _mapController;
   String? _currentAddress;
   bool _isSearching = false;
   double _currentLat = 0;
   double _currentLng = 0;
   Timer? _geocodeDebounce;
+  bool _cameraMoving = false;
 
   @override
   void initState() {
@@ -39,21 +40,38 @@ class _AddressMapScreenState extends State<AddressMapScreen> {
     super.dispose();
   }
 
-  void _onMapCreated(MaplibreMapController controller) {
+  void _onMapCreated(MapLibreMapController controller) {
     _mapController = controller;
   }
 
-  void _onCameraIdle() {
-    _geocodeDebounce?.cancel();
-    _geocodeDebounce = Timer(const Duration(milliseconds: 600), () async {
-      final center = await _mapController?.cameraPosition;
-      if (center == null) return;
+  // Called continuously while camera is moving — use to mark "searching"
+  void _onCameraMove(CameraPosition position) {
+    if (!_cameraMoving) {
+      _cameraMoving = true;
+      _geocodeDebounce?.cancel();
+      if (mounted) {
+        setState(() {
+          _isSearching = true;
+          _currentAddress = null;
+        });
+      }
+    }
+  }
 
-      final lat = center.target.latitude;
-      final lng = center.target.longitude;
+  // Called once camera comes to rest — geocode the final position
+  void _onCameraIdle() {
+    _cameraMoving = false;
+    _geocodeDebounce?.cancel();
+    _geocodeDebounce = Timer(const Duration(milliseconds: 400), () async {
+      final pos = _mapController?.cameraPosition;
+      if (pos == null) return;
+
+      final lat = pos.target.latitude;
+      final lng = pos.target.longitude;
       _currentLat = lat;
       _currentLng = lng;
 
+      if (!mounted) return;
       setState(() => _isSearching = true);
 
       final address = await GeocodingService.reverseGeocode(lat, lng);
@@ -62,14 +80,6 @@ class _AddressMapScreenState extends State<AddressMapScreen> {
         _currentAddress = address;
         _isSearching = false;
       });
-    });
-  }
-
-  void _onCameraMoveStarted() {
-    _geocodeDebounce?.cancel();
-    setState(() {
-      _isSearching = true;
-      _currentAddress = null;
     });
   }
 
@@ -83,22 +93,22 @@ class _AddressMapScreenState extends State<AddressMapScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Map
-          MaplibreMap(
+          // ── Map ──────────────────────────────────────────────────────────
+          MapLibreMap(
             styleString: 'assets/map/style.json',
             initialCameraPosition: CameraPosition(
               target: LatLng(_currentLat, _currentLng),
               zoom: 15,
             ),
             onMapCreated: _onMapCreated,
+            onCameraMove: _onCameraMove,
             onCameraIdle: _onCameraIdle,
-            onCameraMoveStarted: _onCameraMoveStarted,
             trackCameraPosition: true,
             myLocationEnabled: true,
             myLocationTrackingMode: MyLocationTrackingMode.none,
           ),
 
-          // Top bar
+          // ── Top bar ───────────────────────────────────────────────────────
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
@@ -109,27 +119,34 @@ class _AddressMapScreenState extends State<AddressMapScreen> {
                     child: Container(
                       width: 40,
                       height: 40,
-                      decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle,
-                        boxShadow: [BoxShadow(color: Color(0x22000000), blurRadius: 8)],
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
                       ),
-                      child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: AppColors.textDark),
+                      child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                      height: 40,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: const [BoxShadow(color: Color(0x22000000), blurRadius: 8)],
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
                       ),
+                      alignment: Alignment.centerLeft,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: Text(
-                        _currentAddress ?? 'Ищем адрес...',
+                        _isSearching
+                            ? 'Ищем адрес...'
+                            : (_currentAddress ?? 'Переместите карту'),
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: _currentAddress != null ? AppColors.textDark : AppColors.textHint,
+                          color: _currentAddress != null && !_isSearching
+                              ? Colors.black87
+                              : Colors.grey,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -141,22 +158,15 @@ class _AddressMapScreenState extends State<AddressMapScreen> {
             ),
           ),
 
-          // Center pin — always in the visual center of the map
+          // ── Center pin ────────────────────────────────────────────────────
           Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CenterPinWidget(
-                  address: _currentAddress,
-                  isSearching: _isSearching,
-                ),
-                // Offset upward by half pin height so dot sits at map center
-                const SizedBox(height: 0),
-              ],
+            child: CenterPinWidget(
+              address: _currentAddress,
+              isSearching: _isSearching,
             ),
           ),
 
-          // Save button
+          // ── Save button ───────────────────────────────────────────────────
           Positioned(
             left: 20,
             right: 20,
@@ -168,13 +178,21 @@ class _AddressMapScreenState extends State<AddressMapScreen> {
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                    disabledBackgroundColor: AppColors.primary.withOpacity(0.4),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
                     elevation: 0,
                   ),
-                  onPressed: (_currentAddress != null && !_isSearching) ? _save : null,
+                  onPressed:
+                      (_currentAddress != null && !_isSearching) ? _save : null,
                   child: const Text(
                     'Сохранить адрес',
-                    style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ),
